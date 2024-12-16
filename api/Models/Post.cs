@@ -1,12 +1,14 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
 
 namespace api.Models
 {
-    public class Post    {
+    public class Post
+    {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId Id { get; set; } 
+        public ObjectId Id { get; set; }
+
         public ObjectId UserId { get; set; }
 
         [BsonElement("title")]

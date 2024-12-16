@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
 
 namespace api.Models
 {
@@ -15,7 +16,9 @@ namespace api.Models
         [BsonElement("password")]
         public String Password { get; set; }
 
+        
         [BsonElement("posts")]
-        public List<Post> Posts { get; set; }
+        [JsonIgnore]
+        public List<Post> ? Posts { get; set; }
     }
 }
