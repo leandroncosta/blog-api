@@ -6,7 +6,8 @@ namespace api.Services
     {
         private readonly IMongoDatabase _database;
 
-        public MongoDbService(IConfiguration configuration) {
+        public MongoDbService(IConfiguration configuration)
+        {
             var conn = configuration["MongoDB:ConnectionString"];
             var databaseName = configuration["MongoDB:DatabaseName"];
 
@@ -19,7 +20,7 @@ namespace api.Services
             return _database.GetCollection<T>(collectionName);
         }
 
-       
+
 
     }
 }
