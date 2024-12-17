@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Text.Json.Serialization;
 
 namespace api.Models
 {
@@ -8,7 +7,7 @@ namespace api.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("username")]
         public string UserName { get; set; }
@@ -21,6 +20,6 @@ namespace api.Models
         //[JsonIgnore]
         //public List<Post> ? Posts { get; set; }
         [BsonElement("postsIds")]
-        public List<ObjectId>? PostsIds { get; set; } // Lista de IDs dos Posts
+        public List<String>? PostsIds { get; set; } // Lista de IDs dos Posts
     }
 }
