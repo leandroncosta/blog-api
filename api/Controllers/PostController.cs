@@ -46,7 +46,8 @@ namespace api.Controllers
         [HttpGet("GetPostsOfUser/{userId}")]
         public async Task<IActionResult> getPostsByUserId(string userId)
         {
-            var posts = await _postsCollection.Find(p => p.UserId== userId).ToListAsync();
+            var objetId=new ObjectId(userId);
+            var posts = await _postsCollection.Find(p => p.UserId== objetId).ToListAsync();
             return Ok(posts);
         }
         // PUT api/<PostController>/5
