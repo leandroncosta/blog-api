@@ -1,7 +1,6 @@
-﻿using System.Linq.Expressions;
-using System.Net;
-using api.Models;
+﻿using api.Models;
 using api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,6 +9,7 @@ using MongoDB.Driver;
 
 namespace api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PostController : ControllerBase
