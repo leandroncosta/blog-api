@@ -16,9 +16,11 @@ namespace api.Models
         [BsonElement("password")]
         public String Password { get; set; }
 
-        
-        [BsonElement("posts")]
-        [JsonIgnore]
-        public List<Post> ? Posts { get; set; }
+
+        //[BsonElement("posts")]
+        //[JsonIgnore]
+        //public List<Post> ? Posts { get; set; }
+        [BsonElement("postsIds")]
+        public List<ObjectId>? PostsIds { get; set; } // Lista de IDs dos Posts
     }
 }

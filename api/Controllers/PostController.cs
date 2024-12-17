@@ -14,7 +14,6 @@ namespace api.Controllers
     {
         private readonly  IMongoCollection<Post> _postsCollection;
 
-
         public PostController(MongoDbService mongoDbService)
         {
             _postsCollection = mongoDbService.GetCollection<Post>("Post");

@@ -9,6 +9,8 @@ namespace api.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId Id { get; set; }
 
+        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonElement("userId")]
         public ObjectId UserId { get; set; }
 
         [BsonElement("title")]
