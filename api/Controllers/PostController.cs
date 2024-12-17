@@ -60,7 +60,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<ActionResult<Post>> Post(Post post)
         {
-            try{
+            var userId = User.FindFirst("userId")?.Value;
+            post.UserId = userId;
+            try
+            {
                 await _postsCollection.InsertOneAsync(post);
                 return CreatedAtAction(nameof(GetPosts), new { id = post.Id }, post);
             }
