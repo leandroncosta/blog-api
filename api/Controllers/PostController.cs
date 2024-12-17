@@ -1,94 +1,84 @@
 ﻿using api.Models;
 using api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
 namespace api.Controllers
 {
-
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("/api/post")]
     public class PostController : ControllerBase
     {
-
-        private readonly IMongoCollection<Post> _postsCollections;
-        private readonly IMongoCollection<User> _usersCollections;
-
+        private readonly  IMongoCollection<Post> _postsCollection;
 
         public PostController(MongoDbService mongoDbService)
         {
-            this._postsCollections = mongoDbService.GetCollection<Post>("post");
-            this._usersCollections = mongoDbService.GetCollection<User>("user");
-
+            _postsCollection = mongoDbService.GetCollection<Post>("Post");
         }
-
-
+        // GET: api/<PostController>
         [HttpGet]
-        public async Task<IActionResult> getPosts()
+        public async Task <ActionResult> GetPosts()
         {
-            var posts = await this._postsCollections.Find(_ => true).ToListAsync();
+            var posts = await _postsCollection.Find(_ => true).ToListAsync();
             return Ok(posts);
         }
 
+        // GET api/<PostController>/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var objectId= new ObjectId(id);
+            var post =await  _postsCollection.Find(p => p.Id==objectId).FirstOrDefaultAsync();
+            return Ok(post);
+        }
 
+        // POST api/<PostController>
         [HttpPost]
-        public async Task<IActionResult> InsertPost([FromBody] CreatePostDto post)
+        public async Task<ActionResult<Post>> Post(Post post)
         {
-
-            if (post == null)
-                return BadRequest("sem post para criar");
-
-
-            var newPost = new Post
-            {
-                UserId = new ObjectId(post.UserId),
-                Title = post.Title,
-                Content = post.Content,
-                Date = post.Date
-            };
-
-            await _postsCollections.InsertOneAsync(newPost);
-
-            var user = await this._usersCollections.Find(u => u.Id == ObjectId.Parse(post.UserId)).FirstOrDefaultAsync(); ;
-
-            if (user == null)
-            {
-                return NotFound("Usuário não encontrado");
-            }
-
-            if (user.PostsIds == null)
-            {
-                user.PostsIds = new List<ObjectId>();
-            }
-
-            user.PostsIds.Add(newPost.Id);
-            // Atualizar o usuário com o novo PostId
-            await _usersCollections.ReplaceOneAsync(u => u.Id == user.Id, user);
-
-            return Ok(new { message = "Post created successfully", postId = newPost.Id.ToString() });
+            await _postsCollection.InsertOneAsync(post);
+            return CreatedAtAction(nameof(GetPosts), new { id = post.Id }, post);
         }
 
-
-
-        [HttpDelete("/{postId}")]
-        public async Task<IActionResult> DeletePost(ObjectId postId)
+        [HttpGet("GetPostsOfUser/{userId}")]
+        public async Task<IActionResult> getPostsByUserId(string userId)
         {
-            var filterBuilder = Builders<Post>.Filter;
-            var filterById = filterBuilder.Eq(post => post.Id, postId);
-
-
-            var post = await _postsCollections.Find(filterById).FirstOrDefaultAsync();
-            if (post == null) return NotFound("Post não encontrado");
-
-            await _postsCollections.DeleteOneAsync(filterById);
-            return Ok("Post deletado com sucesso");
-
-
+            var posts = await _postsCollection.Find(p => p.UserId== userId).ToListAsync();
+            return Ok(posts);
+        }
+        // PUT api/<PostController>/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult>  Put(string id, [FromBody] Post post)
+        {
+            var objectId = new ObjectId(id);
+            var postDb =   _postsCollection.Find(p => p.Id == objectId).FirstOrDefault();
+            // Se o post não for encontrado, retornar 404
+            if (postDb == null)
+            {
+                return NotFound();
+            }
+            postDb.Title = post.Title;
+            postDb.Content = post.Content;
+           await _postsCollection.ReplaceOneAsync(p=> p.Id== objectId, postDb);
+            return Ok(post);
         }
 
-       
-
+        // DELETE api/<PostController>/5
+        [HttpDelete("{id}")]
+        public async  Task<ActionResult> Delete(string id)
+        {
+            var objectId = new ObjectId(id);
+            var postDb= _postsCollection.Find(p=> p.Id == objectId).FirstOrDefaultAsync();
+            // Se o post não for encontrado, retornar 404
+            if (postDb == null)
+            {
+                return NotFound();
+            }
+            await _postsCollection.DeleteOneAsync(p=> p.Id == objectId);
+            return NoContent();
+        }
     }
 }
