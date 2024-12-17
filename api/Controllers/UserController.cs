@@ -1,14 +1,12 @@
 ﻿using api.Models;
 using api.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace api.Controllers
 {
-
+    [Authorize]
     [ApiController]
     [Route("/api/users")]
     public class UserController : ControllerBase
@@ -42,6 +40,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> InsertUser([FromBody] User user)
         {
 
@@ -49,7 +48,8 @@ namespace api.Controllers
             {
                 return BadRequest("Dados do usuário não fornecidos");
             }
-
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.Password = hashedPassword;
             await _usersCollection.InsertOneAsync(user);
 
             return Created("", new ResponseDto<User>.Builder()
@@ -63,7 +63,7 @@ namespace api.Controllers
         public async Task<IActionResult> getPostsByUserId(string userId)
         {
 
-            var user = await _usersCollection.Find(u => u.Id == ObjectId.Parse(userId)).FirstOrDefaultAsync();
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user == null) return NotFound("usuário não encontrado");
 
@@ -91,10 +91,10 @@ namespace api.Controllers
 
 
         [HttpPatch("{userId}")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto Data, ObjectId UserId)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto Data, string userId)
         {
             var filterBuilder = Builders<User>.Filter;
-            var filterById = filterBuilder.Eq(user => user.Id, UserId);
+            var filterById = filterBuilder.Eq(user => user.Id, userId);
 
 
             var user = await _usersCollection.Find(filterById).FirstOrDefaultAsync();
@@ -133,11 +133,11 @@ namespace api.Controllers
         }
 
         [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteUser(ObjectId UserId)
+        public async Task<IActionResult> DeleteUser(string userId)
         {
 
             var filterBuilder = Builders<User>.Filter;
-            var filterById = filterBuilder.Eq(user => user.Id, UserId);
+            var filterById = filterBuilder.Eq(user => user.Id, userId);
 
 
             var user = await _usersCollection.Find(filterById).FirstOrDefaultAsync();
@@ -153,10 +153,10 @@ namespace api.Controllers
 
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> getUserById(ObjectId UserId)
+        public async Task<IActionResult> getUserById(string userId)
         {
             var filterBuilder = Builders<User>.Filter;
-            var filterById = filterBuilder.Eq(user => user.Id, UserId);
+            var filterById = filterBuilder.Eq(user => user.Id, userId);
 
 
             var user = await _usersCollection.Find(filterById).FirstOrDefaultAsync();
