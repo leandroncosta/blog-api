@@ -1,4 +1,6 @@
-﻿using api.Models;
+﻿using System.Linq.Expressions;
+using System.Net;
+using api.Models;
 using api.Services;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
@@ -22,49 +24,94 @@ namespace api.Controllers
         [HttpGet]
         public async Task <ActionResult> GetPosts()
         {
-            var posts = await _postsCollection.Find(_ => true).ToListAsync();
-            return Ok(posts);
+            try
+            {
+                var posts = await _postsCollection.Find(_ => true).ToListAsync();
+                return Ok(new ResponseDto<List<Post>>.Builder()
+                    .SetStatus(200)
+                    .SetMessage("Posts encontrados com sucesso")
+                    .SetData(posts)
+                    .Build<Post>());
+            }
+            catch (Exception ex) {
+                return BadRequest(ex.Message);
+            }
         }
 
         // GET api/<PostController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var objectId= new ObjectId(id);
-            var post =await  _postsCollection.Find(p => p.Id==objectId).FirstOrDefaultAsync();
-            return Ok(post);
+            try
+            {
+                var objectId = new ObjectId(id);
+                var post = await _postsCollection.Find(p => p.Id == objectId).FirstOrDefaultAsync();
+                return Ok(new ResponseDto<Post>.Builder()
+                    .SetStatus(200)
+                    .SetMessage("Post encontrado com sucesso")
+                    .SetData(post)
+                    .Build<Post>());
+            }
+            catch (Exception ex) { 
+                return BadRequest(ex.Message);
+            }
         }
 
         // POST api/<PostController>
         [HttpPost]
         public async Task<ActionResult<Post>> Post(Post post)
         {
-            await _postsCollection.InsertOneAsync(post);
-            return CreatedAtAction(nameof(GetPosts), new { id = post.Id }, post);
-        }
+            try{
+                await _postsCollection.InsertOneAsync(post);
+                return CreatedAtAction(nameof(GetPosts), new { id = post.Id }, post);
+            }
+            catch (Exception ex) {
+                return BadRequest(ex.Message);
+            }
+            }
 
         [HttpGet("GetPostsOfUser/{userId}")]
         public async Task<IActionResult> getPostsByUserId(string userId)
         {
-            var objetId=new ObjectId(userId);
-            var posts = await _postsCollection.Find(p => p.UserId== objetId).ToListAsync();
-            return Ok(posts);
+            try
+            { 
+                var objetId = new ObjectId(userId);
+                var posts = await _postsCollection.Find(p => p.UserId == objetId).ToListAsync();
+                return Ok(posts);
+            }
+            catch (Exception ex) { 
+                return NotFound(new ResponseDto<Post>.Builder()
+                    .SetMessage("O post não foi encontrado"+ex.Message)
+                    .SetStatus(404)
+                    .SetData(string.Empty)
+                    .Build<Post>());
+            }
         }
         // PUT api/<PostController>/5
         [HttpPut("{id}")]
-        public async Task<ActionResult>  Put(string id, [FromBody] Post post)
+        public async Task<ActionResult>  Put(ObjectId id, [FromBody] Post post)
         {
-            var objectId = new ObjectId(id);
-            var postDb =   _postsCollection.Find(p => p.Id == objectId).FirstOrDefault();
-            // Se o post não for encontrado, retornar 404
-            if (postDb == null)
+
+            try
             {
-                return NotFound();
+    
+                var postDb = _postsCollection.Find(p => p.Id.Equals(id)).FirstOrDefault();
+                if (postDb == null)
+                {
+                    return NotFound();
+                }
+                postDb.Title = post.Title;
+                postDb.Content = post.Content;
+                await _postsCollection.ReplaceOneAsync(p => p.Id.Equals(id), postDb);
+                return Ok(post);
             }
-            postDb.Title = post.Title;
-            postDb.Content = post.Content;
-           await _postsCollection.ReplaceOneAsync(p=> p.Id== objectId, postDb);
-            return Ok(post);
+            catch (Exception ex) { 
+                 return NotFound(new ResponseDto<Post>.Builder()
+                    .SetMessage("O post não foi encontrado"+ex.Message)
+                    .SetStatus(404)
+                    .SetData(string.Empty)
+                    .Build<Post>());
+            }
         }
 
         // DELETE api/<PostController>/5
@@ -80,6 +127,7 @@ namespace api.Controllers
             }
             await _postsCollection.DeleteOneAsync(p=> p.Id == objectId);
             return NoContent();
+
         }
     }
 }
