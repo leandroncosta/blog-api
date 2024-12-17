@@ -17,7 +17,7 @@ namespace api.Controllers
         private readonly IMongoCollection<User> _usersCollections;
 
 
-        public  PostController(MongoDbService mongoDbService)
+        public PostController(MongoDbService mongoDbService)
         {
             this._postsCollections = mongoDbService.GetCollection<Post>("post");
             this._usersCollections = mongoDbService.GetCollection<User>("user");
@@ -69,6 +69,26 @@ namespace api.Controllers
 
             return Ok(new { message = "Post created successfully", postId = newPost.Id.ToString() });
         }
+
+
+
+        [HttpDelete("/{postId}")]
+        public async Task<IActionResult> DeletePost(ObjectId postId)
+        {
+            var filterBuilder = Builders<Post>.Filter;
+            var filterById = filterBuilder.Eq(post => post.Id, postId);
+
+
+            var post = await _postsCollections.Find(filterById).FirstOrDefaultAsync();
+            if (post == null) return NotFound("Post não encontrado");
+
+            await _postsCollections.DeleteOneAsync(filterById);
+            return Ok("Post deletado com sucesso");
+
+
+        }
+
+       
 
     }
 }
