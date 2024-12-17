@@ -7,11 +7,11 @@ namespace api.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonRepresentation(BsonType.ObjectId)]
         [BsonElement("userId")]
-        public ObjectId UserId { get; set; }
+        public string? UserId { get; set; }
 
         [BsonElement("title")]
         public string Title { get; set; }
@@ -23,5 +23,4 @@ namespace api.Models
         public DateTime Date { get; set; }
 
     }
-
 }
