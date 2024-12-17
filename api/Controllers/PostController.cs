@@ -44,8 +44,7 @@ namespace api.Controllers
         {
             try
             {
-                var objectId = new ObjectId(id);
-                var post = await _postsCollection.Find(p => p.Id == objectId).FirstOrDefaultAsync();
+                var post = await _postsCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
                 return Ok(new ResponseDto<Post>.Builder()
                     .SetStatus(200)
                     .SetMessage("Post encontrado com sucesso")
@@ -75,8 +74,7 @@ namespace api.Controllers
         {
             try
             { 
-                var objetId = new ObjectId(userId);
-                var posts = await _postsCollection.Find(p => p.UserId == objetId).ToListAsync();
+                var posts = await _postsCollection.Find(p => p.UserId == userId).ToListAsync();
                 return Ok(posts);
             }
             catch (Exception ex) { 
@@ -89,7 +87,7 @@ namespace api.Controllers
         }
         // PUT api/<PostController>/5
         [HttpPut("{id}")]
-        public async Task<ActionResult>  Put(ObjectId id, [FromBody] Post post)
+        public async Task<ActionResult>  Put(string id, [FromBody] Post post)
         {
 
             try
@@ -118,14 +116,13 @@ namespace api.Controllers
         [HttpDelete("{id}")]
         public async  Task<ActionResult> Delete(string id)
         {
-            var objectId = new ObjectId(id);
-            var postDb= _postsCollection.Find(p=> p.Id == objectId).FirstOrDefaultAsync();
+            var postDb= _postsCollection.Find(p=> p.Id == id).FirstOrDefaultAsync();
             // Se o post não for encontrado, retornar 404
             if (postDb == null)
             {
                 return NotFound();
             }
-            await _postsCollection.DeleteOneAsync(p=> p.Id == objectId);
+            await _postsCollection.DeleteOneAsync(p=> p.Id == id);
             return NoContent();
 
         }
