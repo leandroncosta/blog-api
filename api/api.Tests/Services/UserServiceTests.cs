@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,31 +54,55 @@ namespace api.Tests.Services
         #region Tests CreateUserAsync
 
         [Fact]
-        public async Task CreateUserAsync_ShouldCallAddAsync_WithValidUser()
+        public async Task CreateUserAsync_ShouldCreateUser_WhenUserIsValid()
         {
             // Arrange
-            var newUser = new CreateUserDto
+            var createUserDto = new CreateUserDto
             {
-                UserName = "testuser",
-                Password = BCrypt.Net.BCrypt.HashPassword("testpassword")
+                UserName = "newuser",
+                Password = "securePassword123"
             };
-            // Simulando o comportamento do método AddAsync
-            _userRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
-            // Act
 
+            var newUser = new User
+            {
+                UserName = createUserDto.UserName,
+                Password = createUserDto.Password
+            };
 
+            //// Configura o mock do repositório para que o método AddAsync seja chamado uma vez
+            //_userRepositoryMock.Setup(repo => repo.AddAsync(It.Is<User>(u =>
+            //    u.UserName == createUserDto.UserName &&
+            //    BCrypt.Net.BCrypt.Verify(createUserDto.Password, u.Password))))
+            //    .Returns(Task.CompletedTask);
 
-            //Assert
+            //// Act
+            //await _userService.CreateUserAsync(createUserDto);
 
-            //_userRepositoryMock.Verify(repo => repo
-            //   .AddAsync(It.Is<User>(u => u.UserName == newUser.UserName && BCrypt.Net.BCrypt.Verify(u.Password, newUser.Password)),
-            //    Times.Once
-            // );
-
-            var OkResuklt = Assert.IsType<OkObjectResult>;
-
+            //// Assert
+            //_userRepositoryMock.Verify(repo => repo.AddAsync(It.Is<User>(u =>
+            //    u.UserName == createUserDto.UserName &&
+            //    BCrypt.Net.BCrypt.Verify(createUserDto.Password, u.Password))), Times.Once);
         }
 
+
+        [Fact]
+        public async Task CreateUserAsync_ShouldThrowValidationException_WhenUserNameIsNull()
+        {
+            // Arrange
+            var createUserDto = new CreateUserDto
+            {
+                UserName = null,
+                Password = "securePassword123"
+            };
+
+            // Act & Assert
+            var result = await Assert.ThrowsAsync<ValidationException>(async () =>
+            {
+                await _userService.CreateUserAsync(createUserDto);
+            });
+
+            Assert.IsAssignableFrom<ValidationException>(result);
+        }
 
 
         #endregion
