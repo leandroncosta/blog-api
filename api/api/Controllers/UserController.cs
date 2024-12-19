@@ -21,7 +21,7 @@ namespace api.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> getUsers()
+        public async Task<IActionResult> GetUsers()
         {
             var users = await _userService.GetAllUsersAsync();
 
@@ -35,19 +35,9 @@ namespace api.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> InsertUser([FromBody] User user)
+        public async Task<IActionResult> InsertUser([FromBody] CreateUserDto user)
         {
-
-            if (user == null) return BadRequest(new ResponseDto<object>.Builder()
-                .SetStatus(201)
-                .SetMessage("Dados do usuário não fornecidos")
-                .Build()
-            );
-
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            user.Password = hashedPassword;
             await _userService.CreateUserAsync(user);
-
             return Created("", new ResponseDto<User>.Builder()
                 .SetStatus(201)
                 .SetMessage("Usuário criado com sucesso")
@@ -110,7 +100,7 @@ namespace api.Controllers
 
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> getUserById(string userId)
+        public async Task<IActionResult> GetUserById(string userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
 
