@@ -1,3 +1,6 @@
+using api.Data;
+using api.Middlewares;
+using api.Repositories;
 using api.Services;
 using api.Services.PostService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,9 +16,14 @@ string secretKey = "d33b5e2e-e925-40c3-9991-f84aaab0825c";
 
 // Configurar o MongoDbService
 builder.Services.AddSingleton<MongoDbService>();
+builder.Services.AddScoped<IMongoDbService, MongoDbService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IPostInterface, PostService>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
+
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -33,7 +41,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -71,6 +78,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+// Configura o Exception Handler Middleware
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

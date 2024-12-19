@@ -1,6 +1,7 @@
 ﻿
 
 using System.Collections.Generic;
+using api.Data;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,7 +15,7 @@ namespace api.Services.PostService
     {
         private readonly IMongoCollection<Post> _postsCollection;
         private readonly IMongoCollection<User> _usersCollection;
-        public PostRepository(MongoDbService mongoDbService)
+        public PostRepository(IMongoDbService mongoDbService)
         {
             _postsCollection = mongoDbService.GetCollection<Post>("Post");
             _usersCollection = mongoDbService.GetCollection<User>("User");

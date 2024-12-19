@@ -12,6 +12,7 @@ namespace api.Models
         public int Status { get; private set; }
         public DateTime Timestamp { get; private set; }
         public string Message { get; private set; }
+
         public T Data { get; private set; }
         public object Error { get; private set; }
 
@@ -72,7 +73,7 @@ namespace api.Models
                 return this;
             }
 
-            public ResponseDto<T> Build<T>()
+            public ResponseDto<T> Build()
             {
                 return new ResponseDto<T>((bool)Success, Status, Timestamp, Message, (T)Data, Error);
             }

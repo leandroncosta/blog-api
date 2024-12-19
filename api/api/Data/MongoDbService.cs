@@ -1,8 +1,8 @@
 ﻿using MongoDB.Driver;
 
-namespace api.Services
+namespace api.Data
 {
-    public class MongoDbService
+    public class MongoDbService : IMongoDbService
     {
         private readonly IMongoDatabase _database;
 

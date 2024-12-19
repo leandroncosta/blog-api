@@ -20,6 +20,6 @@ namespace api.Models
         //[JsonIgnore]
         //public List<Post> ? Posts { get; set; }
         [BsonElement("postsIds")]
-        public List<String>? PostsIds { get; set; } // Lista de IDs dos Posts
+        public List<string>? PostsIds { get; set; } // Lista de IDs dos Posts
     }
 }

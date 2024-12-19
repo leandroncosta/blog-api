@@ -1,4 +1,5 @@
-﻿using api.Models;
+﻿using api.Data;
+using api.Models;
 using api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -13,20 +14,20 @@ namespace api.Controllers
     [Route("/api/login")]
     public class AccountController : ControllerBase
     {
-        private readonly IMongoCollection<User> _usersCollection;
+        private readonly IUserService _userService;
 
-        public AccountController(MongoDbService mongoDbService)
+        public AccountController(IUserService userService)
         {
-            _usersCollection = mongoDbService.GetCollection<User>("user");
+            _userService = userService;
         }
 
         [HttpPost]
-        public IActionResult Login([FromBody] User userlogin)
+        public async Task<IActionResult> Login([FromBody] User userlogin)
         {
             try
             {
                 // Busca o usuario no banco de dados pelo username
-                var user = _usersCollection.Find(u => u.UserName == userlogin.UserName).FirstOrDefault();
+                var user = await _userService.GetUserByUserNameAsync(userlogin.UserName);
 
                 // Se o usuario não for encontrado
                 if (user == null)
