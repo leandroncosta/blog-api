@@ -2,6 +2,7 @@
 using api.Models;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -57,13 +58,21 @@ namespace api.Middlewares
                       .SetError(new { Details = "Unauthorized" });
                     break;
 
+                case ValidationException validationException:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    builder
+                      .SetStatus(response.StatusCode)
+                      .SetMessage("Validation failed")
+                      .SetError(new { Details = validationException.Message });
+                    break;
+
 
                 default:
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     builder
                      .SetStatus(response.StatusCode)
                      .SetMessage("An unexpected error occurred.")
-                     .SetError(new { Details = "An unexpected error occurred : " + exception.Message });
+                     .SetError(new { Details = "Internal server error: " + exception.Message });
                     break;
             }
 
