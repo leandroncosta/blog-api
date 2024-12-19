@@ -1,4 +1,5 @@
 using api.Services;
+using api.Services.PostService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -12,6 +13,9 @@ string secretKey = "d33b5e2e-e925-40c3-9991-f84aaab0825c";
 
 // Configurar o MongoDbService
 builder.Services.AddSingleton<MongoDbService>();
+
+builder.Services.AddScoped<IPostInterface, PostService>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -29,6 +33,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
+    
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
