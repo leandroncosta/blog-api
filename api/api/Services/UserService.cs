@@ -47,7 +47,7 @@ namespace api.Services
             {
                 throw new NotFoundException($"User with userName {userName} not found.");
             }
-            return await _userRepository.GetByUserNameAsync(userName);
+            return user; ;
         }
 
         public async Task UpdateUserAsync(string userId, User updatedUser)
