@@ -1,9 +1,8 @@
-﻿using api.Data;
 using api.Models;
+using api.Services.PostService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using MongoDB.Driver;
+
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,120 +13,146 @@ namespace api.Controllers
     [ApiController]
     public class PostController : ControllerBase
     {
-        private readonly  IMongoCollection<Post> _postsCollection;
+        private readonly IPostInterface _postInterface; // interface do service 
 
-        public PostController(MongoDbService mongoDbService)
+        public PostController(IPostInterface postInterface)
         {
-            _postsCollection = mongoDbService.GetCollection<Post>("Post");
+            _postInterface = postInterface;
         }
         // GET: api/<PostController>
         [HttpGet]
-        public async Task <ActionResult> GetPosts()
+        public async Task<ActionResult<ResponseDto<Post>>> GetPosts()
         {
             try
             {
-                var posts = await _postsCollection.Find(_ => true).ToListAsync();
-                return Ok(new ResponseDto<List<Post>>.Builder()
-                    .SetStatus(200)
-                    .SetMessage("Posts encontrados com sucesso")
-                    .SetData(posts)
-                    .Build());
+                var posts = await _postInterface.GetPosts();
+                return Ok(new ResponseDto<Post>.Builder()
+                        .SetStatus(200)
+                        .SetMessage("Os posts foram encontrados")
+                        .SetData(posts)
+                        .Build());
             }
-            catch (Exception ex) {
-                return BadRequest(ex.Message);
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseDto<Post>.Builder()
+                         .SetStatus(404)
+                         .SetMessage(ex.Message)
+                         .SetData(new List<Post>())
+                         .Build());
+
             }
         }
 
         // GET api/<PostController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<ActionResult<ResponseDto<Post>>> GetPostById(string id)
         {
             try
             {
-                var post = await _postsCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+                var post = await _postInterface.GetPostById(id);
                 return Ok(new ResponseDto<Post>.Builder()
                     .SetStatus(200)
                     .SetMessage("Post encontrado com sucesso")
                     .SetData(post)
                     .Build());
             }
-            catch (Exception ex) { 
-                return BadRequest(ex.Message);
+            catch (Exception ex)
+            {
+                return BadRequest(
+                    new ResponseDto<Post>.Builder()
+                    .SetStatus(404)
+                    .SetMessage(ex.Message)
+                    .SetData(new Post())
+                    .Build());
             }
         }
 
-        // POST api/<PostController>
         [HttpPost]
-        public async Task<ActionResult<Post>> Post(Post post)
+        public async Task<ActionResult<Post>> CreatePost([FromBody] Post post)
         {
             var userId = User.FindFirst("userId")?.Value;
             post.UserId = userId;
             try
             {
-                await _postsCollection.InsertOneAsync(post);
-                return CreatedAtAction(nameof(GetPosts), new { id = post.Id }, post);
+                var result = await _postInterface.CreatePost(userId, post);
+                var response = new ResponseDto<Post>.Builder()
+                    .SetStatus(201)
+                    .SetMessage("Post criado com sucesso")
+                    .SetData(result)
+                    .Build();
+                return CreatedAtAction(nameof(GetPosts), new { id = response.Data.Id }, response);
             }
-            catch (Exception ex) {
-                return BadRequest(ex.Message);
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseDto<Post>.Builder()
+                    .SetStatus(400)
+                    .SetMessage("Post não foi criado")
+                    .SetData(post)
+                    .Build());
             }
-            }
+        }
 
         [HttpGet("GetPostsOfUser/{userId}")]
-        public async Task<IActionResult> getPostsByUserId(string userId)
+        public async Task<ActionResult<ResponseDto<List<Post>>>> GetPostsByUserId(string userId)
         {
             try
-            { 
-                var posts = await _postsCollection.Find(p => p.UserId == userId).ToListAsync();
-                return Ok(posts);
+            {
+                var posts = await _postInterface.GetPostsByUserId(userId);
+                return Ok(new ResponseDto<List<Post>>.Builder()
+                    .SetMessage("Posts encontrados com sucesso")
+                    .SetStatus(200)
+                    .SetData(posts)
+                     .Build());
             }
-            catch (Exception ex) { 
+            catch (Exception ex)
+            {
                 return NotFound(new ResponseDto<Post>.Builder()
-                    .SetMessage("O post não foi encontrado"+ex.Message)
+                    .SetMessage("O posts não foram encontrados" + ex.Message)
                     .SetStatus(404)
                     .SetData(string.Empty)
-                    .Build());
+                     .Build());
             }
         }
         // PUT api/<PostController>/5
         [HttpPut("{id}")]
-        public async Task<ActionResult>  Put(string id, [FromBody] Post post)
+        public async Task<ActionResult<ResponseDto<Post>>> Put(string id, [FromBody] Post post)
         {
-
             try
             {
-    
-                var postDb = _postsCollection.Find(p => p.Id.Equals(id)).FirstOrDefault();
-                if (postDb == null)
-                {
-                    return NotFound();
-                }
-                postDb.Title = post.Title;
-                postDb.Content = post.Content;
-                await _postsCollection.ReplaceOneAsync(p => p.Id.Equals(id), postDb);
-                return Ok(post);
+                var postDb = await _postInterface.Put(id, post);
+                return Ok(new ResponseDto<Post>.Builder()
+                   .SetMessage("O post foi  atualizado com sucesso")
+                   .SetStatus(200)
+                   .SetData(post)
+                   .Build());
             }
-            catch (Exception ex) { 
-                 return NotFound(new ResponseDto<Post>.Builder()
-                    .SetMessage("O post não foi encontrado"+ex.Message)
-                    .SetStatus(404)
-                    .SetData(string.Empty)
+            catch (Exception ex)
+            {
+                return NotFound(new ResponseDto<Post>.Builder()
+                   .SetMessage("O post não foi encontrado" + ex.Message)
+                   .SetStatus(404)
+                   .SetData(string.Empty)
                     .Build());
             }
         }
 
         // DELETE api/<PostController>/5
         [HttpDelete("{id}")]
-        public async  Task<ActionResult> Delete(string id)
+        public async Task<ActionResult> Delete(string id)
         {
-            var postDb= _postsCollection.Find(p=> p.Id == id).FirstOrDefaultAsync();
-            // Se o post não for encontrado, retornar 404
-            if (postDb == null)
+            try
             {
-                return NotFound();
+                var postDb = await _postInterface.Delete(id);
+                return NoContent();
             }
-            await _postsCollection.DeleteOneAsync(p=> p.Id == id);
-            return NoContent();
-
+            catch (Exception ex)
+            {
+                return NotFound(new ResponseDto<Post>.Builder()
+                   .SetMessage("O post não foi encontrado" + ex.Message)
+                   .SetStatus(204)
+                   .SetData(string.Empty)
+                   .Build());
+            }
         }
     }
 }
