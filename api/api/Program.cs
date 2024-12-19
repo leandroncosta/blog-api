@@ -2,6 +2,7 @@ using api.Data;
 using api.Middlewares;
 using api.Repositories;
 using api.Services;
+using api.Services.PostService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -18,6 +19,9 @@ builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<IPostInterface, PostService>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 
 

@@ -1,9 +1,7 @@
-﻿using api.Data;
-using api.Models;
+﻿using api.Models;
 using api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 
 namespace api.Controllers
 {
