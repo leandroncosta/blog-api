@@ -4,11 +4,11 @@ namespace api.Services
 {
     public interface IUserService
     {
-        Task CreateUserAsync(CreateUserDto user); 
+        Task<User> CreateUserAsync(CreateUserDto user); 
         Task<IEnumerable<User>> GetAllUsersAsync(); 
         Task<User> GetUserByIdAsync(string userId); 
         Task<User> GetUserByUserNameAsync(string userName); 
-        Task UpdateUserAsync(string userId, User updatedUser); 
+        Task<User> UpdateUserAsync(string userId, UpdateUserDto updateUserDto); 
         Task DeleteUserAsync(string userId); 
     }
 }

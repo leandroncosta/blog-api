@@ -9,12 +9,12 @@ namespace api.Repositories
     {
 
         private readonly IMongoCollection<User> _collection;
-       
+
         public UserRepository(IMongoDbService mongoDbService)
         {
-           
+
             _collection = mongoDbService.GetCollection<User>("user");
-        
+
         }
 
         public async Task AddAsync(User user)
@@ -25,8 +25,8 @@ namespace api.Repositories
         public async Task DeleteAsync(string userId)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
-             await _collection.DeleteOneAsync(filter);
-           
+            await _collection.DeleteOneAsync(filter);
+
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
@@ -57,10 +57,9 @@ namespace api.Repositories
         }
 
 
-        public async Task UpdateAsync(string userId, User updatedUser)
+        public async Task<User> UpdateAsync(string userId, User updatedUser)
         {
-            var filterBuilder = Builders<User>.Filter;
-            var filterById = filterBuilder.Eq(user => user.Id, userId);
+            var filterById = Builders<User>.Filter.Eq(user => user.Id, userId);
 
             var patchBuilder = Builders<User>.Update;
             var updates = new List<UpdateDefinition<User>>();
@@ -74,11 +73,15 @@ namespace api.Repositories
             {
                 updates.Add(patchBuilder.Set(p => p.Password, updatedUser.Password));
             }
-         
+
             var updateDefinition = patchBuilder.Combine(updates);
-             await _collection.UpdateOneAsync(
-               filterById,
-               updateDefinition);
+            return await _collection.FindOneAndUpdateAsync(
+              filterById,
+              updateDefinition,
+               new FindOneAndUpdateOptions<User>
+               {
+                   ReturnDocument = ReturnDocument.After
+               });
 
         }
     }

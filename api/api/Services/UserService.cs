@@ -16,10 +16,10 @@ namespace api.Services
             _userRepository = userRepository;
         }
 
-        public async Task CreateUserAsync(CreateUserDto user)
+        public async Task<User> CreateUserAsync(CreateUserDto user)
         {
             await EnsureUserDoesNotExistAsync(user.UserName);
-            var newUser = new User { 
+            var newUser = new User {
                 UserName = user.UserName,
                 Password = user.Password,
                 PostsIds = new List<string>()
@@ -27,7 +27,9 @@ namespace api.Services
             ValidateUser(newUser);
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
             newUser.Password = hashedPassword;
+     ;
             await _userRepository.AddAsync(newUser);
+            return newUser;
         }
 
         public async Task DeleteUserAsync(string userId)
@@ -56,12 +58,10 @@ namespace api.Services
             return user; ;
         }
 
-        public async Task UpdateUserAsync(string userId, User updatedUser)
+        public async Task<User> UpdateUserAsync(string userId, UpdateUserDto updateUserDto)
         {
             var user = await EnsureUserExistsAsync(userId);
-            user.UserName = updatedUser.UserName ?? user.UserName;
-         
-            await _userRepository.UpdateAsync(userId, user);
+            return await _userRepository.UpdateAsync(userId, user);
         }
 
 

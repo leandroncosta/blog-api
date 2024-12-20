@@ -38,10 +38,11 @@ namespace api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> InsertUser([FromBody] CreateUserDto user)
         {
-            await _userService.CreateUserAsync(user);
+            var createdUser = await _userService.CreateUserAsync(user);
             return Created("", new ResponseDto<UserDTO>.Builder()
                 .SetStatus(201)
                 .SetMessage("Usuário criado com sucesso")
+                .SetData(UserDTO.ConvertToUserDto(createdUser))
                 .Build());
         }
 
@@ -60,15 +61,13 @@ namespace api.Controllers
 
 
         [HttpPatch("{userId}")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto Data, string userId)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto data, string userId)
         {
-            await _userService.UpdateUserAsync(
-                userId,
-                new User { UserName = Data.Username, Password = Data.Password });
-
+            var updatedUser = await _userService.UpdateUserAsync(userId, data);
             return Ok(new ResponseDto<User>.Builder()
                 .SetStatus(200)
                 .SetMessage("Usuário atualizado com sucesso")
+                .SetData(UserDTO.ConvertToUserDto(updatedUser))
                 .Build()
                 );
         }
