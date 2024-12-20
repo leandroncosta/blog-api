@@ -19,7 +19,11 @@ namespace api.Services
         public async Task CreateUserAsync(CreateUserDto user)
         {
             await EnsureUserDoesNotExistAsync(user.UserName);
-            var newUser = new User { UserName = user.UserName, Password = user.Password};
+            var newUser = new User { 
+                UserName = user.UserName,
+                Password = user.Password,
+                PostsIds = new List<string>()
+            };
             ValidateUser(newUser);
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
             newUser.Password = hashedPassword;

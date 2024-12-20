@@ -30,19 +30,9 @@ namespace api.Services.PostService
             post.UserId = userId;
             var createdPost = await _postRepository.CreatePost(userId, post);
 
+          ;
 
-            var user = await _userRepository.GetByIdAsync(post.UserId);
-
-            if (user.PostsIds == null)
-            {
-                user.PostsIds = new List<string>();
-            }
-          
-                user.PostsIds.Add(createdPost.Id);
-            
-
-            Console.WriteLine(string.Join(", ", user.PostsIds));
-            await _userRepository.UpdateAsync(userId, user);
+            await _userRepository.AddPostIdToUserAsync(userId, createdPost.Id!);
 
             return createdPost;
         }  

@@ -48,6 +48,15 @@ namespace api.Repositories
             .FirstOrDefaultAsync();
         }
 
+        public async Task AddPostIdToUserAsync(string userId, string postId)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var update = Builders<User>.Update.AddToSet(u => u.PostsIds, postId);
+
+            await _collection.UpdateOneAsync(filter, update);
+        }
+
+
         public async Task UpdateAsync(string userId, User updatedUser)
         {
             var filterBuilder = Builders<User>.Filter;
