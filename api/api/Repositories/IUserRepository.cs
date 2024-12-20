@@ -12,5 +12,6 @@ namespace api.Repositories
         Task AddPostIdToUserAsync(string userId, string postId);
         Task<User> UpdateAsync(string userId, User updatedUser);
         Task DeleteAsync(string userId);
+        Task UpdatePostIdsForUserAsync(string userId, string postId);
     }
 }

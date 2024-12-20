@@ -84,5 +84,13 @@ namespace api.Repositories
                });
 
         }
+
+        public async Task UpdatePostIdsForUserAsync(string userId, string postId)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var update = Builders<User>.Update.Pull(u => u.PostsIds, postId);
+
+            await _collection.UpdateOneAsync(filter, update);
+        }
     }
 }

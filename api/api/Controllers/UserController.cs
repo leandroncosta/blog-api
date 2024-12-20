@@ -64,7 +64,7 @@ namespace api.Controllers
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto data, string userId)
         {
             var updatedUser = await _userService.UpdateUserAsync(userId, data);
-            return Ok(new ResponseDto<User>.Builder()
+            return Ok(new ResponseDto<UserDTO>.Builder()
                 .SetStatus(200)
                 .SetMessage("Usuário atualizado com sucesso")
                 .SetData(UserDTO.ConvertToUserDto(updatedUser))
