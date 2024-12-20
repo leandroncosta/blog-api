@@ -20,7 +20,6 @@ namespace api.Controllers
             _postService = postInterface;
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
