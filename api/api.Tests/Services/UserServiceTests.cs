@@ -8,6 +8,7 @@ using api.Exceptions;
 using api.Models;
 using api.Repositories;
 using api.Services;
+using api.Services.PostService;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -17,12 +18,13 @@ namespace api.Tests.Services
     {
 
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IPostRepository> _postRepostoryMock;
         private readonly UserService _userService;
 
         public UserServiceTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _userService = new UserService(_userRepositoryMock.Object);
+            _userService = new UserService(_userRepositoryMock.Object, _postRepostoryMock.Object);
         }
 
         #region Tests GetAllUsersAsync

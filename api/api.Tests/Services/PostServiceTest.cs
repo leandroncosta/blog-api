@@ -18,11 +18,12 @@ namespace TestProject1.ServicesTest
     {
 
         private readonly PostService _postService;
+        private readonly IUserService _userService;
         private readonly Mock<IPostRepository> _postRepositoryMock=new Mock<IPostRepository>();
         private readonly Mock<IUserRepository> _userRepositoryMock = new Mock<IUserRepository>();
         public PostServiceTest()
         {
-            _postService = new PostService(_postRepositoryMock.Object, _userRepositoryMock.Object);
+            _postService = new PostService(_postRepositoryMock.Object, _userService, _userRepositoryMock.Object);
 
         }
         private Post Post = new Post()
