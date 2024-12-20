@@ -1,6 +1,8 @@
 ﻿
 
+using System.Diagnostics.Eventing.Reader;
 using api.Models;
+using api.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
@@ -10,11 +12,13 @@ namespace api.Services.PostService
 {
     public class PostService : IPostInterface
     {
+        private readonly IUserRepository _userRepository;
         private readonly IPostRepository _postRepository;
 
-        public PostService(IPostRepository postRepository)
+        public PostService(IPostRepository postRepository, IUserRepository userRepository)
         {
             _postRepository = postRepository;
+            _userRepository = userRepository;
         }
         public async Task<List<Post>> GetPosts()
         {
@@ -24,9 +28,25 @@ namespace api.Services.PostService
         public async Task<Post> CreatePost(string userId,Post post)
         {
             post.UserId = userId;
-            await _postRepository.CreatePost(userId, post);
-            return post;
+            var createdPost = await _postRepository.CreatePost(userId, post);
+
+
+            var user = await _userRepository.GetByIdAsync(post.UserId);
+
+            if (user.PostsIds == null)
+            {
+                user.PostsIds = new List<string>();
+            }
+          
+                user.PostsIds.Add(createdPost.Id);
+            
+
+            Console.WriteLine(string.Join(", ", user.PostsIds));
+            await _userRepository.UpdateAsync(userId, user);
+
+            return createdPost;
         }  
+
         public async Task<List<Post>> GetPostsByUserId(string userId)
         {
             var posts = await _postRepository.GetPostsByUserId(userId);

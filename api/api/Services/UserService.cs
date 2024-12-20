@@ -2,6 +2,7 @@
 using api.Exceptions;
 using api.Models;
 using api.Repositories;
+using MongoDB.Driver;
 
 namespace api.Services
 {
@@ -17,6 +18,7 @@ namespace api.Services
 
         public async Task CreateUserAsync(CreateUserDto user)
         {
+            await EnsureUserDoesNotExistAsync(user.UserName);
             var newUser = new User { UserName = user.UserName, Password = user.Password};
             ValidateUser(newUser);
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
@@ -58,6 +60,7 @@ namespace api.Services
             await _userRepository.UpdateAsync(userId, user);
         }
 
+
         private async Task<User> EnsureUserExistsAsync(string userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);
@@ -67,6 +70,15 @@ namespace api.Services
             }
 
             return user;
+        }
+
+        private async Task EnsureUserDoesNotExistAsync(string userName)
+        {
+            var existingUser = await _userRepository.GetByUserNameAsync(userName);
+            if (existingUser != null)
+            {
+                throw new ValidationException($"User with username '{userName}' already exists.");
+            }
         }
 
         private void ValidateUser(User user)
