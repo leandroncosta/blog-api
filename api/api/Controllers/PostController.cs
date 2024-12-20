@@ -26,7 +26,7 @@ namespace api.Controllers
             try
             {
                 var posts = await _postInterface.GetPosts();
-                return Ok(new ResponseDto<Post>.Builder()
+                return Ok(new ResponseDto<List<Post>>.Builder()
                         .SetStatus(200)
                         .SetMessage("Os posts foram encontrados")
                         .SetData(posts)
