@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using api.Exceptions;
 using api.Models;
 using api.Repositories;
@@ -18,13 +19,14 @@ namespace api.Tests.Services
     {
 
         private readonly Mock<IUserRepository> _userRepositoryMock;
-        private readonly Mock<IPostRepository> _postRepostoryMock;
+        private readonly Mock<IPostRepository> _postRepositoryMock;
         private readonly UserService _userService;
 
         public UserServiceTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _userService = new UserService(_userRepositoryMock.Object, _postRepostoryMock.Object);
+            _postRepositoryMock = new Mock<IPostRepository>();
+            _userService = new UserService(_userRepositoryMock.Object, _postRepositoryMock.Object);
         }
 
         #region Tests GetAllUsersAsync
@@ -223,21 +225,28 @@ namespace api.Tests.Services
         {
             //range
             var userId = "65648b4a04df751357db22fb";
-            var existingUser = new User { Id = userId, UserName = "oldUsername" };
-            var updatedUser = new User { UserName = "newUserName" };
+            var existingUser = new User { Id = userId, UserName = "oldUsername", Password = "teste" };
+            var updateUserDto = new UpdateUserDto("newUserName", "teste");
+
+            var updatedUser = new User
+            {
+                Id = userId,
+                UserName = updateUserDto.Username!,
+                Password = updateUserDto.Password
+            };
 
             _userRepositoryMock.Setup(repo => repo.GetByIdAsync(userId)).ReturnsAsync(existingUser);
 
-            _userRepositoryMock.Setup(repo => repo.UpdateAsync(userId, It.IsAny<User>())).Returns(Task.CompletedTask);
+            _userRepositoryMock.Setup(repo => repo.UpdateAsync(userId, It.IsAny<User>())).ReturnsAsync(updatedUser);
 
             //act 
-            var result = _userService.UpdateUserAsync(userId, updatedUser);
+            var result = _userService.UpdateUserAsync(userId, updateUserDto);
 
             //assert
             _userRepositoryMock.Verify(repo => repo.UpdateAsync(userId,
-                It.Is<User>(u => u.UserName == updatedUser.UserName)), Times.Once);
+                It.Is<User>(u => u.UserName == updateUserDto.Username)), Times.Once);
             _userRepositoryMock.Verify(repo => repo.GetByIdAsync(userId), Times.Once);
-            Assert.Equal(updatedUser.UserName, existingUser.UserName);
+            Assert.Equal(updatedUser.UserName, updateUserDto.Username);
             Assert.Equal(userId, existingUser.Id);
         }
 
@@ -246,18 +255,27 @@ namespace api.Tests.Services
         {
             //range
             var userId = "65648b4a04df751357db22fb";
-            var existingUser = new User { Id = userId, UserName = "oldUsername" };
-            var updatedUser = new User { UserName = "newUserName" };
+            var existingUser = new User { Id = userId, UserName = "oldUsername", Password = "teste" };
+            var updateUserDto = new UpdateUserDto("newUserName", "teste");
+
+            var updatedUser = new User
+            {
+                Id = userId,
+                UserName = updateUserDto.Username,
+                Password = updateUserDto.Password
+            };
+
+
             var invalidUserId = "65648b4a04df751357db22fc";
 
             _userRepositoryMock.Setup(repo => repo.GetByIdAsync(userId)).ReturnsAsync(existingUser);
 
-            _userRepositoryMock.Setup(repo => repo.UpdateAsync(userId, It.IsAny<User>())).Returns(Task.CompletedTask);
+            _userRepositoryMock.Setup(repo => repo.UpdateAsync(userId, It.IsAny<User>())).ReturnsAsync(updatedUser);
 
             //act 
             var result = await Assert.ThrowsAsync<NotFoundException>(async () =>
             {
-                await _userService.UpdateUserAsync(invalidUserId, updatedUser);
+                await _userService.UpdateUserAsync(invalidUserId, updateUserDto);
 
             });
 
@@ -275,10 +293,12 @@ namespace api.Tests.Services
         {
             //range
             var userId = "65648b4a04df751357db22fb";
-            var existingUser = new User { Id = userId, UserName = "user" };
+            var existingUser = new User { Id = userId, UserName = "user", PostsIds = ["65648b4a04df751357db22fc"] };
 
             // Configurando o mock para retornar um usuário válido para o userId
             _userRepositoryMock.Setup(repo => repo.GetByIdAsync(userId)).ReturnsAsync(existingUser);
+
+            _postRepositoryMock.Setup(repo => repo.DeleteManyByUserIdAsync(userId)).Returns(Task.CompletedTask);
 
             // Configurando o mock para o método de atualização
             _userRepositoryMock.Setup(repo => repo.DeleteAsync(userId)).Returns(Task.CompletedTask);
@@ -292,7 +312,12 @@ namespace api.Tests.Services
             _userRepositoryMock.Verify(repo => repo.DeleteAsync(userId), Times.Once);
             // Garantindo que o método EnsureUserExistsAsync foi chamado
             _userRepositoryMock.Verify(repo => repo.GetByIdAsync(userId), Times.Once);
+
+            // Garantindo que o método DeleteManyByUserIdAsync foi chamado
+            _postRepositoryMock.Verify(repo => repo.DeleteManyByUserIdAsync(userId), Times.Once);
         }
+
+
 
         [Fact]
         public async Task DeleteteUserAsync_ShouldUserExcepion_WhenUserNotExists()
@@ -303,6 +328,7 @@ namespace api.Tests.Services
             var invalidUserId = "65648b4a04df751357db22fc";
 
             _userRepositoryMock.Setup(repo => repo.GetByIdAsync(userId)).ReturnsAsync(existingUser);
+            _postRepositoryMock.Setup(repo => repo.DeleteManyByUserIdAsync(userId)).Returns(Task.CompletedTask);
             _userRepositoryMock.Setup(repo => repo.DeleteAsync(userId)).Returns(Task.CompletedTask);
 
             //act
