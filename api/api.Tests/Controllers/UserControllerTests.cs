@@ -38,7 +38,18 @@ namespace api.Tests.Controllers
         }
 
         [Fact]
-        public async Task InsertUser_InvalidUsername_ReturnsBadRequest()
+        public async Task InsertUser_ShouldReturnBadRequest_WhenUsername_HasWhiteSpace()
+        {
+            //Arrange
+            var invalidUser = new CreateUserDto { UserName = null };
+            //Act
+            var result = await _controller.InsertUser(invalidUser);
+            //
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task InsertUser_ShouldReturnBadRequest_WhenUsername_HasDollarSign()
         {
             // Arrange
             var invalidUser = new CreateUserDto { UserName = "Invalid$Name" };
@@ -50,5 +61,17 @@ namespace api.Tests.Controllers
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
+        [Fact]
+        public async Task InsertUser_ShouldReturnBadRequest_WhenUsername_HasDot()
+        {
+            // Arrange
+            var invalidUser = new CreateUserDto { UserName = "Invalid.Name" };
+
+            // Act
+            var result = await _controller.InsertUser(invalidUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
     }
 }
