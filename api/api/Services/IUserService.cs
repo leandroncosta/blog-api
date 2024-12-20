@@ -8,7 +8,7 @@ namespace api.Services
         Task<IEnumerable<User>> GetAllUsersAsync(); 
         Task<User> GetUserByIdAsync(string userId); 
         Task<User> GetUserByUserNameAsync(string userName); 
-        Task UpdateUserAsync(string userId, User updatedUser); 
-        Task DeleteUserAsync(string userId); 
+        Task UpdateUserAsync(string userId, User updatedUser);
+        Task DeleteUserAsync(string userId);
     }
 }

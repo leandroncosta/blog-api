@@ -41,7 +41,7 @@ namespace api.Controllers
         public async Task<IActionResult> InsertUser([FromBody] CreateUserDto user)
         {
             await _userService.CreateUserAsync(user);
-            return Created("", new ResponseDto<UserDTO>.Builder()
+            return Created("", new ResponseDto<CreateUserDto>.Builder()
                 .SetStatus(201)
                 .SetMessage("Usuário criado com sucesso")
                 .Build());
