@@ -4,7 +4,7 @@ using api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace api.Tests
+namespace api.Tests.Controllers
 {
     public class AccountControllerTests
     {
@@ -141,6 +141,48 @@ namespace api.Tests
             var response = okResult.Value as TokenResponse;
 
             Assert.Equal("mockedToken", response.Token);
+        }
+
+        [Fact]
+        public async Task Login_ShouldReturnBadRequest_WhenUsername_IsNull()
+        {
+            //Arrange
+            var loginRequest = new User { UserName = null};
+
+            //Act
+            var result = await _controller.Login(loginRequest);
+
+            //Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task Login_ShouldReturnBadRequest_WhenUsername_HasDollarSign()
+        {
+            //Arrange
+            var loginRequest = new User { UserName = "testaDa$" };
+
+            //Act
+            var result = await _controller.Login(loginRequest);
+
+            //Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task Login_ShouldReturnBadRequest_WhenUsername_HasDot()
+        {
+            //Arrange
+            var loginRequest = new User { UserName = "tes.taDa" };
+
+            //Act
+            var result = await _controller.Login(loginRequest);
+
+            //Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
         }
     }
 }
