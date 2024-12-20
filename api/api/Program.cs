@@ -19,7 +19,7 @@ builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPostInterface, PostService>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 

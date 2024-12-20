@@ -20,7 +20,7 @@ namespace TestProject1.ServicesTest
         private readonly Mock<IPostRepository> _postRepositoryMock=new Mock<IPostRepository>();
         public PostServiceTest()
         {
-            _postService = new PostService(_postRepositoryMock.Object);
+            //_postService = new PostService(_postRepositoryMock.Object);
 
         }
         private Post Post = new Post()
