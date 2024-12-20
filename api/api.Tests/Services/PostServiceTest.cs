@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using api.Controllers;
 using api.Models;
+using api.Repositories;
 using api.Services;
 using api.Services.PostService;
 using Microsoft.Extensions.Hosting;
@@ -18,9 +19,10 @@ namespace TestProject1.ServicesTest
 
         private readonly PostService _postService;
         private readonly Mock<IPostRepository> _postRepositoryMock=new Mock<IPostRepository>();
+        private readonly Mock<IUserRepository> _userRepositoryMock = new Mock<IUserRepository>();
         public PostServiceTest()
         {
-            //_postService = new PostService(_postRepositoryMock.Object);
+            _postService = new PostService(_postRepositoryMock.Object, _userRepositoryMock.Object);
 
         }
         private Post Post = new Post()
@@ -42,8 +44,8 @@ namespace TestProject1.ServicesTest
 
         };
         List<Post> PostsList = new List<Post>();
+        
       
-
         [Fact(DisplayName = "Should return all posts with success when posts exists ")]
         public async void GetPosts_ShouldReturnAllPosts_WhenPostsExists()
         {
@@ -88,9 +90,10 @@ namespace TestProject1.ServicesTest
             //Arrange
             var userId = Post.UserId;
             var post = Post;
-        
+            var user=new User { Id = "1", UserName = "User1" };
+            _userRepositoryMock.Setup(userRepository => userRepository.GetByIdAsync(userId)).ReturnsAsync(user);
             _postRepositoryMock.Setup(p => p.CreatePost(userId,post)).ReturnsAsync(post);
-            //Act 
+            //Act
             var actual = await _postService.CreatePost(userId,post);
             //Assert
             Assert.NotNull(actual);
