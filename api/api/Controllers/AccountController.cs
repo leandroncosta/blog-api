@@ -21,6 +21,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] User userlogin)
         {
+            if (string.IsNullOrWhiteSpace(userlogin.UserName) || userlogin.UserName.Contains("$") || userlogin.UserName.Contains("."))
+            {
+                return BadRequest(new { message = "Invalid username format" });
+            } //proteçao contra no sql injection
             try
             {
                 // Busca o usuario no banco de dados pelo username

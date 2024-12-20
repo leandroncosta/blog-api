@@ -20,7 +20,6 @@ namespace api.Controllers
             _postService = postInterface;
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
@@ -38,6 +37,10 @@ namespace api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> InsertUser([FromBody] CreateUserDto user)
         {
+            if (string.IsNullOrWhiteSpace(user.UserName) || user.UserName.Contains("$") || user.UserName.Contains("."))
+            {
+                return BadRequest(new { message = "Invalid username format" });
+            } //proteçao contra no sql injection
 
             var createdUser = await _userService.CreateUserAsync(user);
             return Created("", new ResponseDto<UserDTO>.Builder()
