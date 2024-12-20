@@ -38,6 +38,7 @@ namespace api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> InsertUser([FromBody] CreateUserDto user)
         {
+
             var createdUser = await _userService.CreateUserAsync(user);
             return Created("", new ResponseDto<UserDTO>.Builder()
                 .SetStatus(201)
