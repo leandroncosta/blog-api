@@ -12,13 +12,15 @@ namespace api.Services.PostService
 {
     public class PostService : IPostInterface
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly IPostRepository _postRepository;
+        private readonly IUserRepository _userRepository;
 
-        public PostService(IPostRepository postRepository, IUserRepository userRepository)
+        public PostService(IPostRepository postRepository, IUserService userService, IUserRepository userRepository)
         {
             _postRepository = postRepository;
-            _userRepository = userRepository;
+            _userService= userService;
+            _userRepository= userRepository;
         }
         public async Task<List<Post>> GetPosts()
         {
@@ -30,19 +32,9 @@ namespace api.Services.PostService
             post.UserId = userId;
             var createdPost = await _postRepository.CreatePost(userId, post);
 
+          ;
 
-            var user = await _userRepository.GetByIdAsync(post.UserId);
-
-            if (user.PostsIds == null)
-            {
-                user.PostsIds = new List<string>();
-            }
-          
-                user.PostsIds.Add(createdPost.Id);
-            
-
-            Console.WriteLine(string.Join(", ", user.PostsIds));
-            await _userRepository.UpdateAsync(userId, user);
+            await _userRepository.AddPostIdToUserAsync(userId, createdPost.Id);
 
             return createdPost;
         }  
@@ -62,10 +54,17 @@ namespace api.Services.PostService
         }
         public async Task<bool> Delete(string id)
         {
+            var post = await _postRepository.GetPostById(id);
+            var userId = post?.UserId;
+
+            await _userRepository.UpdatePostIdsForUserAsync(userId, id);
+
             return await _postRepository.Delete(id);
         }
 
-       
+      
+
+
     }
 }
 

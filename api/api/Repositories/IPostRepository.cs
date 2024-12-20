@@ -10,5 +10,6 @@ namespace api.Services.PostService
         Task<List<Post>> GetPostsByUserId(string userId);
         Task<Post> Put(string id, Post post);
         Task<bool> Delete(string id);
+        Task DeleteManyByUserIdAsync(string userId);
     }
 }

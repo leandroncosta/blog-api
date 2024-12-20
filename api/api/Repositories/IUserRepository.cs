@@ -9,7 +9,9 @@ namespace api.Repositories
         Task<IEnumerable<User>> GetAllAsync();
         Task<User> GetByIdAsync(string userId);
         Task<User> GetByUserNameAsync(string userName);
-        Task UpdateAsync(string userId, User updatedUser);
+        Task AddPostIdToUserAsync(string userId, string postId);
+        Task<User> UpdateAsync(string userId, User updatedUser);
         Task DeleteAsync(string userId);
+        Task UpdatePostIdsForUserAsync(string userId, string postId);
     }
 }

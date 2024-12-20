@@ -101,6 +101,12 @@ namespace api.Services.PostService
             }
 
         }
+
+        public async Task DeleteManyByUserIdAsync(string userId)
+        {
+            var filterUserPosts = Builders<Post>.Filter.Eq(post => post.UserId, userId);
+           await _postsCollection.DeleteManyAsync(filterUserPosts);
+        }
     }
 }
 

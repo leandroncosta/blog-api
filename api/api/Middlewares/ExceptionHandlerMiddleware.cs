@@ -47,22 +47,22 @@ namespace api.Middlewares
                     builder 
                       .SetStatus(response.StatusCode)
                       .SetMessage(notFoundException.Message)
-                      .SetError(new { Details = "Resource not found" });
+                      .SetError(new { Details = "The resource you are trying to access does not exist." });
                     break;
 
                 case UnauthorizedAccessException unauthorizedAccessException:
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     builder
                       .SetStatus(response.StatusCode)
-                      .SetMessage("Authentication is required.")
-                      .SetError(new { Details = "Unauthorized" });
+                      .SetMessage("Authentication is required to access this resource.")
+                      .SetError(new { Details = "You need to log in or provide valid credentials to access this resource." });
                     break;
 
                 case ValidationException validationException:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     builder
                       .SetStatus(response.StatusCode)
-                      .SetMessage("Validation failed")
+                      .SetMessage("There were validation errors in the provided data.")
                       .SetError(new { Details = validationException.Message });
                     break;
 
@@ -72,7 +72,7 @@ namespace api.Middlewares
                     builder
                      .SetStatus(response.StatusCode)
                      .SetMessage("An unexpected error occurred.")
-                     .SetError(new { Details = "Internal server error: " + exception.Message });
+                     .SetError(new { Details = "Please try again later or contact support if the problem persists. " + exception.Message });
                     break;
             }
 
