@@ -1,5 +1,6 @@
-﻿using api.Models;
+using api.Models;
 using api.Services;
+using api.Services.PostService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +12,12 @@ namespace api.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IPostInterface _postService;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IPostInterface postInterface)
         {
             _userService = userService;
+            _postService = postInterface;
         }
 
 
@@ -22,11 +25,11 @@ namespace api.Controllers
         public async Task<IActionResult> GetUsers()
         {
             var users = await _userService.GetAllUsersAsync();
-
-            return Ok(new ResponseDto<List<User>>.Builder()
+            var usersDtos = users.Select(UserDTO.ConvertToUserDto).ToList();
+            return Ok(new ResponseDto<List<UserDTO>>.Builder()
                             .SetStatus(200)
                             .SetMessage("Usuários encontrados")
-                            .SetData(users)
+                            .SetData(usersDtos)
                             .Build());
 
         }
@@ -36,38 +39,24 @@ namespace api.Controllers
         public async Task<IActionResult> InsertUser([FromBody] CreateUserDto user)
         {
             await _userService.CreateUserAsync(user);
-            return Created("", new ResponseDto<User>.Builder()
+            return Created("", new ResponseDto<UserDTO>.Builder()
                 .SetStatus(201)
                 .SetMessage("Usuário criado com sucesso")
-                .SetData(user)
                 .Build());
         }
 
-        //[HttpGet("{userId}/posts")]
-        //public async Task<IActionResult> getPostsByUserId(string userId)
-        //{
+        [HttpGet("{userId}/posts")]
+        public async Task<IActionResult> getPostsByUserId(string userId)
+        {
+            var posts = await _postService.GetPostsByUserId(userId);
+            return Ok(new ResponseDto<List<Post>>.Builder()
+                .SetStatus(200)
+                .SetMessage("Posts encontrado com sucesso.")
+                .SetData(posts)
+                .Build()
+                );
 
-        //    var user = await _userService.GetUserByIdAsync(userId);
-
-        //    if (user == null) return NotFound("usuário não encontrado");
-
-
-        //    if (user.PostsIds != null && user.PostsIds.Any())
-        //    {
-        //        var posts = await _postCollections
-        //        .Find(post => user.PostsIds.Contains(post.Id))
-        //        .ToListAsync();
-
-        //        return Ok(new ResponseDto<List<Post>>.Builder()
-        //        .SetStatus(200)
-        //        .SetMessage("Posts do usuário encontrado")
-        //        .SetData(posts)
-        //        .Build<List<Post>>()
-        //        );
-        //    }
-        //    return NoContent();
-        //    }
-        //}
+        }
 
 
         [HttpPatch("{userId}")]
@@ -102,10 +91,10 @@ namespace api.Controllers
         {
             var user = await _userService.GetUserByIdAsync(userId);
 
-            return Ok(new ResponseDto<User>.Builder()
+            return Ok(new ResponseDto<UserDTO>.Builder()
                .SetStatus(200)
                .SetMessage("Usuário encontrado com sucesso")
-               .SetData(user)
+               .SetData(UserDTO.ConvertToUserDto(user))
                .Build()
                );
         }

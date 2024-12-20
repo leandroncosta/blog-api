@@ -17,8 +17,8 @@ namespace api.Services.PostService
         private readonly IMongoCollection<User> _usersCollection;
         public PostRepository(IMongoDbService mongoDbService)
         {
-            _postsCollection = mongoDbService.GetCollection<Post>("Post");
-            _usersCollection = mongoDbService.GetCollection<User>("User");
+            _postsCollection = mongoDbService.GetCollection<Post>("post");
+            _usersCollection = mongoDbService.GetCollection<User>("user");
         }
         public async Task<List<Post>> GetPosts()
         {
