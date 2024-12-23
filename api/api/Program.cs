@@ -12,9 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 string secretKey = "d33b5e2e-e925-40c3-9991-f84aaab0825c";
 
-// Add services to the container.
-
-// Configurar o MongoDbService
+// Add services to the container
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -24,7 +22,16 @@ builder.Services.AddScoped<IPostInterface, PostService>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -34,7 +41,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Informe o token JWT no formato: Bearer {seu token}",
+        Description = "Informe o token JWT no formato: Bearer seuToken",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -88,6 +95,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

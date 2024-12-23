@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/pages/login_page.dart';
 import 'package:flutter_application/pages/user_register/user_register_page.dart';
 
 class AppWidget extends StatelessWidget {
@@ -6,9 +7,13 @@ class AppWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: "teste",
-      home: UserRegisterPage(),
+    return MaterialApp(
+      title: "",
+      initialRoute: "/login",
+      routes: {
+        "/login": (context) => const LoginPage(),
+        "/register": (context) => const UserRegisterPage()
+      },
     );
   }
 }
