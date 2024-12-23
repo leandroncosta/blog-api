@@ -34,7 +34,7 @@ namespace api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponseDto<Post>.Builder()
+                return BadRequest(new ResponseDto<List<Post>>.Builder()
                          .SetStatus(404)
                          .SetMessage(ex.Message)
                          .SetData(new List<Post>())
@@ -106,10 +106,10 @@ namespace api.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(new ResponseDto<Post>.Builder()
-                    .SetMessage("O posts não foram encontrados" + ex.Message)
+                return NotFound(new ResponseDto<List<Post>>.Builder()
+                    .SetMessage("Os posts não foram encontrados" + ex.Message)
                     .SetStatus(404)
-                    .SetData(string.Empty)
+                    .SetData(new List<Post>())
                      .Build());
             }
         }
@@ -131,7 +131,7 @@ namespace api.Controllers
                 return NotFound(new ResponseDto<Post>.Builder()
                    .SetMessage("O post não foi encontrado" + ex.Message)
                    .SetStatus(404)
-                   .SetData(string.Empty)
+                   .SetData(new Post())
                     .Build());
             }
         }
@@ -147,9 +147,9 @@ namespace api.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(new ResponseDto<Post>.Builder()
+                return NotFound(new ResponseDto<string>.Builder()
                    .SetMessage("O post não foi encontrado" + ex.Message)
-                   .SetStatus(204)
+                   .SetStatus(404)
                    .SetData(string.Empty)
                    .Build());
             }
