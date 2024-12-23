@@ -12,19 +12,16 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-
   @override
   void initState() {
     super.initState();
     verifyToken().then((value) {
       if (value) {
-        Navigator.pushReplacement(context, 
-        MaterialPageRoute(builder: (context) => HomePage())
-        );
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
       } else {
-        Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) =>  LoginPage())
-        );
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => LoginPage()));
       }
     });
   }
@@ -32,15 +29,14 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      )
-    );
+        body: Center(
+      child: CircularProgressIndicator(),
+    ));
   }
 
   Future<bool> verifyToken() async {
     SharedPreferences sharedPreference = await SharedPreferences.getInstance();
-    if (sharedPreference.getString('token') != null ){
+    if (sharedPreference.getString('token') != null) {
       return true;
     } else {
       return false;
