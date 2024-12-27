@@ -3,6 +3,7 @@
 using System.Diagnostics.Eventing.Reader;
 using api.Models;
 using api.Repositories;
+using api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
@@ -19,42 +20,45 @@ namespace api.Services.PostService
         public PostService(IPostRepository postRepository, IUserService userService, IUserRepository userRepository)
         {
             _postRepository = postRepository;
-            _userService= userService;
-            _userRepository= userRepository;
+            _userService = userService;
+            _userRepository = userRepository;
         }
         public async Task<List<Post>> GetPosts()
         {
             var postsDb = await _postRepository.GetPosts();
             return postsDb;
         }
-        public async Task<Post> CreatePost(string userId,Post post)
+        public async Task<Post> CreatePost(string userId, Post post)
         {
             post.UserId = userId;
             var createdPost = await _postRepository.CreatePost(userId, post);
 
-          ;
+            ;
 
             await _userRepository.AddPostIdToUserAsync(userId, createdPost.Id);
 
             return createdPost;
-        }  
+        }
 
         public async Task<List<Post>> GetPostsByUserId(string userId)
         {
             var posts = await _postRepository.GetPostsByUserId(userId);
-                return posts;
+            return posts;
         }
         public async Task<Post> GetPostById(string id)
         {
             return await _postRepository.GetPostById(id);
         }
-        public async Task<Post> Put(string id,Post post)
+        public async Task<Post> Put(string id, Post post)
         {
-               return  await _postRepository.Put(id, post);
+            var p = await _postRepository.GetPostById(id);
+            SecurityUtils.VerifyOwnerShip(p?.UserId);
+            return await _postRepository.Put(id, post);
         }
         public async Task<bool> Delete(string id)
         {
             var post = await _postRepository.GetPostById(id);
+            SecurityUtils.VerifyOwnerShip(post?.UserId);
             var userId = post?.UserId;
 
             await _userRepository.UpdatePostIdsForUserAsync(userId, id);
@@ -62,7 +66,7 @@ namespace api.Services.PostService
             return await _postRepository.Delete(id);
         }
 
-      
+
 
 
     }

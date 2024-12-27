@@ -65,6 +65,14 @@ namespace api.Middlewares
                       .SetMessage("There were validation errors in the provided data.")
                       .SetError(new { Details = validationException.Message });
                     break;
+                case UnauthorizedResourceAccessException unauthorizedResourceAccessException:
+                    response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    builder
+                        .SetStatus(response.StatusCode)
+                        .SetMessage("You are not allowed to perform this action. This post does not belong to you.")
+                        .SetError(new { Details = unauthorizedResourceAccessException.Message });
+                    break;
+
 
 
                 default:

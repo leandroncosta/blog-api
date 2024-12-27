@@ -7,13 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="NewFolder\**" />
     <Compile Remove="Repositories\NewFolder\**" />
-    <Content Remove="NewFolder\**" />
     <Content Remove="Repositories\NewFolder\**" />
-    <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Repositories\NewFolder\**" />
-    <None Remove="NewFolder\**" />
     <None Remove="Repositories\NewFolder\**" />
   </ItemGroup>
 
