@@ -3,6 +3,7 @@ using api.Middlewares;
 using api.Repositories;
 using api.Services;
 using api.Services.PostService;
+using api.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,6 +21,12 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPostInterface, PostService>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
+
+builder.Services.AddHttpContextAccessor();
+
+
+//builder.Services.AddScoped<SecurityUtils>();
+
 
 
 builder.Services.AddCors(options =>
@@ -89,6 +96,8 @@ var app = builder.Build();
 // Configura o Exception Handler Middleware
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
+SecurityUtils.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -97,6 +106,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+
 
 app.UseHttpsRedirection();
 
