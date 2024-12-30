@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using api.Models;
 using api.Services;
 using api.Services.PostService;
+using api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -67,6 +69,7 @@ namespace api.Controllers
         [HttpPatch("{userId}")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto data, string userId)
         {
+            SecurityUtils.VerifyOwnerShip(userId);
             var updatedUser = await _userService.UpdateUserAsync(userId, data);
             return Ok(new ResponseDto<UserDTO>.Builder()
                 .SetStatus(200)
@@ -79,7 +82,9 @@ namespace api.Controllers
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
+            SecurityUtils.VerifyOwnerShip(userId);
             await _userService.DeleteUserAsync(userId);
+            
 
             return Ok(new ResponseDto<object>.Builder()
                 .SetStatus(200)
@@ -100,6 +105,24 @@ namespace api.Controllers
                .SetData(UserDTO.ConvertToUserDto(user))
                .Build()
                );
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> getCurrentUser()
+        {
+            var userId = SecurityUtils.FindAuthenticatedUser()?.FindFirst("userId")?.Value;
+
+            var user = await _userService.GetUserByIdAsync(userId!); 
+            SecurityUtils.VerifyOwnerShip(userId!);
+
+            return Ok(new ResponseDto<UserDTO>.Builder()
+              .SetStatus(200)
+              .SetMessage("Usuário encontrado com sucesso")
+              .SetData(UserDTO.ConvertToUserDto(user))
+              .Build()
+              );
+
+
         }
 
     }

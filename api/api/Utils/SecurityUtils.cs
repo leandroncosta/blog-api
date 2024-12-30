@@ -1,6 +1,7 @@
 ﻿using api.Exceptions;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Security.Claims;
 
 namespace api.Utils
 {
@@ -13,9 +14,14 @@ namespace api.Utils
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public static ClaimsPrincipal? FindAuthenticatedUser()
+        {
+            return _httpContextAccessor.HttpContext?.User;
+        }
+
         public static void VerifyOwnerShip(string resourceOwnerId)
         {
-            var user = _httpContextAccessor.HttpContext?.User;
+            var user = FindAuthenticatedUser();
             if (user == null || !user.Identity.IsAuthenticated)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
