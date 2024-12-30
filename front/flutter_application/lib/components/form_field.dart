@@ -11,9 +11,13 @@ class FormFieldInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+    
       controller: controller,
       decoration:  InputDecoration(
-        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+        labelStyle: const TextStyle(fontSize: 25 ,),
+        border: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10)
+        )),
         labelText: labelText,
       ),
       onChanged: (value) {

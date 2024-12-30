@@ -1,8 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/shared/models/post_model.dart';
 import 'package:flutter_application/shared/repositories/post_repository.dart';
-import 'package:http/http.dart';
 
 class PostController {
   List<Post> posts = [];
@@ -45,12 +43,12 @@ class PostController {
   }
 
   Future delete(String id) async {
-    state.value = EPostState.loading;
+    //state.value = EPostState.loading;
     try {
       print("Deletando$id");
       await _postRepository.delete(id);
       await findAll();
-      state.value = EPostState.success;
+      //state.value = EPostState.success;
     } catch (e) {
       print("ERRO ao deletar posts $e");
       state.value = EPostState.error;
