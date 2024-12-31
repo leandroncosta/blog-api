@@ -22,72 +22,31 @@ namespace api.Services.PostService
         }
         public async Task<List<Post>> GetPosts()
         {
-            List<Post> postsDb;
-            try
-            {
-                return postsDb = await _postsCollection.Find(_ => true).ToListAsync(); ;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+                return await _postsCollection.Find(_ => true).ToListAsync(); ;
         }
 
         public async Task<Post> GetPostById(string id)
         {
-            try
-            {
-                var post = await _postsCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
-                return post;
-            }
-            catch (Exception ex) {
-                throw new Exception(ex.Message);
-            }
+            return await _postsCollection.Find(p => p.Id == id).FirstOrDefaultAsync();  
         }
-
-
         public async Task<Post> CreatePost(string userId, Post post)
         {
-            post.UserId = userId;
-            try
-            {
+                post.UserId = userId;
                 await _postsCollection.InsertOneAsync(post);
                 return post;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
         public async Task<List<Post>> GetPostsByUserId(string userId)
         {
-            try
-            {
                 return await _postsCollection.Find(p => p.UserId == userId).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
         public async Task<Post> Put(string id, Post post)
         {
-            try
-            {
                 var postDb = _postsCollection.Find(p => p.Id.Equals(id)).FirstOrDefault();
-                if (postDb == null)
-                {
-                    return postDb = new Post();
-                }
+                
                 postDb.Title = post.Title;
                 postDb.Content = post.Content;
                 await _postsCollection.ReplaceOneAsync(p => p.Id.Equals(id), postDb);
                 return postDb;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
         public async Task<bool> Delete(string id)
         {

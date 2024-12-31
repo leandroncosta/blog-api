@@ -117,13 +117,25 @@ namespace api.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ResponseDto<Post>>> Put(string id, [FromBody] Post post)
         {
+            try
+            {
 
-            var postDb = await _postInterface.Put(id, post);
-            return Ok(new ResponseDto<Post>.Builder()
-               .SetMessage("O post foi  atualizado com sucesso")
-               .SetStatus(200)
-               .SetData(post)
-               .Build());
+                var postDb = await _postInterface.Put(id, post);
+                return Ok(new ResponseDto<Post>.Builder()
+              .SetMessage("O post foi  atualizado com sucesso")
+              .SetStatus(200)
+              .SetData(post)
+              .Build());
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new ResponseDto<Post>.Builder()
+                    .SetMessage(ex.Message)
+                    .SetStatus(404)
+                    .SetData(new Post())
+                     .Build());
+            }
+           
 
 
         }
