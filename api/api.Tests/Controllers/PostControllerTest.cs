@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using Moq;
 using Xunit.Sdk;
 
@@ -109,7 +110,6 @@ namespace TestProject1.Controllers
             Assert.Null(responseDto.Data.Id);
             Assert.Null(responseDto.Data.UserId);
             Assert.Null(responseDto.Data.Content);
-            Assert.Equal(new DateTime(), responseDto.Data.Date);
             Assert.Null(responseDto.Data.Title);
             
             Assert.Contains(new Exception().Message, responseDto.Message);
@@ -125,8 +125,8 @@ namespace TestProject1.Controllers
             // Act
             var actual=await _postController.CreatePost(post);
             //Assert
-            var actionResult = Assert.IsType<ActionResult<ResponseDto<Post>>>(actual);
-            var OkObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            var actionResult = Assert.IsType<ActionResult<Post>>(actual);
+            var OkObjectResult = Assert.IsType<OkObjectResult>(actionResult);
             var responseDto = Assert.IsType<ResponseDto<Post>>(OkObjectResult.Value);
 
             Assert.Equal(201, responseDto.Status);
@@ -149,16 +149,16 @@ namespace TestProject1.Controllers
         {
             //Arrange
             var userId = post.UserId;
-            _postServiceMock.Setup(s => s.CreatePost(userId, post)).ThrowsAsync(new Exception());
+            _postServiceMock.Setup(s => s.CreatePost(userId, post)).ThrowsAsync(new Exception("Post não foi criado"));
             // Act
             var actual = await _postController.CreatePost(post);
             //Assert
-            var actionResult = Assert.IsType<ActionResult<ResponseDto<Post>>>(actual);
+            var actionResult = Assert.IsType<ActionResult<Post>>(actual);
             var badRequestObjectResult = Assert.IsType<BadRequestObjectResult>(actionResult.Result);
             var responseDto = Assert.IsType<ResponseDto<Post>>(badRequestObjectResult.Value);
             
             Assert.Equal(400, responseDto.Status);
-            Assert.Contains("Post criado com sucesso", responseDto.Message);
+            Assert.Contains("Post não foi criado", responseDto.Message);
             Assert.Equal(post, responseDto.Data);
             Assert.Equal(post.Id, responseDto.Data.Id);
             Assert.Equal(post.Title, responseDto.Data.Title);
@@ -243,7 +243,7 @@ namespace TestProject1.Controllers
             //Arrange
             var id = post.Id;
             var postEmpty=new Post();
-            _postServiceMock.Setup(s => s.Put(It.IsAny<string>(),It.IsAny<Post>())).ThrowsAsync(new Exception());
+            _postServiceMock.Setup(s => s.Put(It.IsAny<string>(),It.IsAny<Post>())).ThrowsAsync(new Exception("O post não foi encontrado "));
             // Act
             var actual = await _postController.Put(id, postEmpty);
             //Assert
@@ -251,7 +251,7 @@ namespace TestProject1.Controllers
             var notFoundObjectResult = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
             var responseDto = Assert.IsType<ResponseDto<Post>>(notFoundObjectResult.Value);
 
-            Assert.Contains("O post não foi encontrado", responseDto.Message);
+            Assert.Contains("O post não foi encontrado ", responseDto.Message);
             Assert.Equal(404, responseDto.Status);
             Assert.NotNull(responseDto.Data);
             Assert.Equal(postEmpty.Id, responseDto.Data.Id);

@@ -56,7 +56,12 @@ namespace api.Services.PostService
         }
         public async Task<Post> GetPostById(string id)
         {
-            return await _postRepository.GetPostById(id);
+             var postDb=await _postRepository.GetPostById(id);
+            if (postDb == null)
+            {
+                throw new NotFoundException("O post não foi encontrado");
+            }
+            return postDb;
         }
         public async Task<Post> Put(string id, Post post)
         {

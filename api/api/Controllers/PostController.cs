@@ -60,6 +60,7 @@ namespace api.Controllers
             {
                 return BadRequest(
                     new ResponseDto<Post>.Builder()
+                    .SetError(true)
                     .SetStatus(404)
                     .SetMessage(ex.Message)
                     .SetData(new Post())
@@ -70,7 +71,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<ActionResult<Post>> CreatePost([FromBody] Post post)
         {
-            var userId = User.FindFirst("userId")?.Value;
+            var userId = User?.FindFirst("userId")?.Value;
             post.UserId = userId;
             try
             {
