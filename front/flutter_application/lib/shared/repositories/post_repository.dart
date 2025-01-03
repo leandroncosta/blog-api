@@ -22,6 +22,7 @@ class PostRepository {
 
   Future<Post> createPost(Post post) async {
     final ioClient = IOClient(httpClient);
+    await getTokenFromSharedPreferences();
     final response = await ioClient.post(url,
         headers: {
           'Content-Type': 'application/json',
@@ -29,7 +30,6 @@ class PostRepository {
         },
         body: json.encode({'title': post.title, 'content': post.content}));
     log(response.statusCode.toString());
-    print(response.statusCode.toString());
     if (response.statusCode == 201) {
       log("o post foi criado ${response.statusCode}");
       var json = jsonDecode(response.body);
@@ -42,13 +42,14 @@ class PostRepository {
 
   Future findById(String id) async {
     final url = Uri.parse("https://10.0.2.2:7101/api/Post/$id");
+    await getTokenFromSharedPreferences();
     final ioClient = IOClient(httpClient);
     final response = await ioClient.get(url, headers: {
       'Authorization': 'Bearer $token',
     });
     log(response.statusCode.toString());
+    var json = jsonDecode(response.body);
     if (response.statusCode == 200) {
-      var json = jsonDecode(response.body);
       Post post = Post.fromJson(json['data']);
       log(json['message']);
       log(post.title);
@@ -56,8 +57,8 @@ class PostRepository {
       log(response.statusCode.toString());
       return post;
     } else {
-      log('Erro ao deletar  post: ${response.statusCode}');
-      throw Exception('Erro ao deletar post');
+      log('Erro ao buscar  post: ${response.statusCode}');
+      throw json['message'].toString() + json[''];
     }
   }
 
@@ -68,23 +69,26 @@ class PostRepository {
     final response = await ioClient.get(url, headers: {
       'Authorization': 'Bearer $token',
     });
+    final body = jsonDecode(response.body);
     if (response.statusCode == 200) {
       log('status  findALL(): ${response.statusCode}');
       final List<Post> posts = [];
-      final body = jsonDecode(response.body);
       body['data'].map((item) {
         final Post post = Post.fromJson(item);
         posts.add(post);
       }).toList();
       return posts;
     } else {
+      log('status  findALL(): ${response.statusCode}');
       log('Erro ao obter posts: ${response.statusCode}');
-      throw Exception('Erro ao buscar posts ${response.statusCode}');
+     
+      throw Exception('${body['message']} \n statuscode: ${body['status']}');
     }
   }
 
   Future update(Post post) async {
     final url = Uri.parse("https://10.0.2.2:7101/api/Post/${post.id}");
+    await getTokenFromSharedPreferences();
     final ioClient = IOClient(httpClient);
     final response = await ioClient.put(url,
         headers: {
@@ -104,6 +108,7 @@ class PostRepository {
 
   Future delete(String id) async {
     final url = Uri.parse("https://10.0.2.2:7101/api/Post/$id");
+    await getTokenFromSharedPreferences();
     final ioClient = IOClient(httpClient);
     await getTokenFromSharedPreferences();
     final response = await ioClient.delete(url, headers: {

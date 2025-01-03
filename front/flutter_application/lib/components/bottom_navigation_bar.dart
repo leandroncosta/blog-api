@@ -10,7 +10,7 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomnavigationbarState extends State<BottomNavBar> {
-  int _selectedIndex = 0;
+  late int _selectedIndex=2 ;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
@@ -35,6 +35,7 @@ class _BottomnavigationbarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     
     return BottomNavigationBar(
+      showUnselectedLabels: false,
         backgroundColor: context.watch<PostProvider>().isDarktheme
         ? const Color.fromARGB(255, 34, 35, 34)
         : const Color.fromARGB(255, 208, 209, 208),

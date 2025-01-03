@@ -1,13 +1,12 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application/Providers/post_provider.dart';
 import 'package:flutter_application/components/bottom_navigation_bar.dart';
-import 'package:flutter_application/components/edit_post_modal.dart';
 import 'package:flutter_application/components/form_field.dart';
+import 'package:flutter_application/pages/posts/list_posts.dart';
 import 'package:flutter_application/shared/controllers/post_controller.dart';
 import 'package:flutter_application/shared/models/post_model.dart';
-import 'package:intl/date_symbol_data_file.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class PostView extends StatefulWidget {
@@ -24,43 +23,6 @@ class _MyWidgetState extends State<PostView> {
   final titleEditingController = TextEditingController();
   final contentEdidingController = TextEditingController();
   final idEditingController = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-    postController.start();
-  }
-
-  changeState(EPostState state) {
-    switch (state) {
-      case EPostState.start:
-        return _start();
-      case EPostState.loading:
-        return _loading();
-      case EPostState.success:
-        return _success();
-      case EPostState.error:
-        return _error();
-    }
-  }
-
-  _start() {
-    return Container();
-  }
-
-  _error() {
-    return Center(
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text("Erro ao buscar os dados , tente novamente outra vez"),
-        ElevatedButton(
-            onPressed: () {
-              postController.start();
-            },
-            child: const Text("Tentar novamente"))
-      ],
-    ));
-  }
 
   _showEditModal(BuildContext context, String id) async {
     TextEditingController titleEditController = TextEditingController();
@@ -95,14 +57,9 @@ class _MyWidgetState extends State<PostView> {
                 );
               } else if (snapshot.hasError) {
                 return Center(
-                  child: Column(
-                    children: [
-                      Text("Houve um erro ao buscar o post ${snapshot.error}"),
-                      Text(
-                          style: const TextStyle(fontSize: 16),
-                          snapshot.error.toString()),
-                    ],
-                  ),
+                  child: Text(
+                      style: const TextStyle(fontSize: 16),
+                      snapshot.error.toString()),
                 );
               } else if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Column(children: [
@@ -135,8 +92,8 @@ class _MyWidgetState extends State<PostView> {
                       content: contentEditController.text,
                       date: "",
                     );
-                    postController.update(updatedPost);
-
+                    //postController.update(updatedPost);
+                    context.read<PostProvider>().update(updatedPost);
                     Navigator.of(context).pop();
                   },
                   child: const Text("Salvar"),
@@ -149,97 +106,6 @@ class _MyWidgetState extends State<PostView> {
     );
   }
 
-  _success() {
-    if (postController.posts.isEmpty) {
-      return const Center(
-        child: Text("Nenhum post disponível"),
-      );
-    }
-    return ListView.builder(
-        padding: const EdgeInsets.only(top: 5, bottom: 70),
-        itemCount: postController.posts.length,
-        itemBuilder: (context, index) {
-          var p = postController.posts[index];
-          var date = DateTime.parse(p.date);
-          var utc3Date = date.subtract(const Duration(hours: 3));
-          var formatedDate = DateFormat("dd/MM/yyyy").add_jm().format(utc3Date);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Container(
-              decoration: BoxDecoration(
-                  border: Border.all(
-                      color: const Color.fromARGB(255, 212, 215, 212),
-                      width: 3)),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 200,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Post id: ${p.id}",
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          "Post ${p.userId}",
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                        Text(
-                          "Título - ${p.title}",
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                        Text(
-                          "Conteúdo - ${p.content}",
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                        Text(
-                          "Data de criação : ${formatedDate}",
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      ElevatedButton(
-                        child: const Text('editar'),
-                        onPressed: () {
-                          _showEditModal(context, p.id);
-                        },
-                      ),
-                      const SizedBox(width: 200),
-                      ElevatedButton(
-                        child: const Text('deletar'),
-                        onPressed: () {
-                          _showDeleteModal(context, p.id);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
-
-  _loading() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [CircularProgressIndicator(), Text("Carregando os dados")],
-      ),
-    );
-  }
-
   _createpost() {
     post = Post(
         id: "",
@@ -247,8 +113,7 @@ class _MyWidgetState extends State<PostView> {
         title: titleEditingController.text,
         content: contentEdidingController.text,
         date: "");
-    postController.createPost(post);
-    //_futurePosts=postController.findAll();
+    context.read<PostProvider>().createPost(post);
     titleEditingController.clear();
     contentEdidingController.clear();
   }
@@ -301,7 +166,10 @@ class _MyWidgetState extends State<PostView> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Processando dados')));
+                        const SnackBar(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.elliptical(50, 100),topRight: Radius.circular(70))),
+                          backgroundColor: Colors.amber,
+                          content: Text('Processando dados')));
                     _createpost();
                   }
                 },
@@ -312,38 +180,6 @@ class _MyWidgetState extends State<PostView> {
                   Navigator.pop(context);
                 },
                 child: const Text("cancelar"),
-              ),
-            ]);
-      },
-    );
-  }
-
-  _showDeleteModal(context, id) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-            title: Text(
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-              "Tem certeza que deseja deletar o  post de id :$id ?",
-            ),
-            content: const SizedBox(
-              height: 50,
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("cancelar"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  postController.delete(id);
-                  Navigator.of(context).pop();
-                },
-                child: const Text("deletar post"),
               ),
             ]);
       },
@@ -384,6 +220,19 @@ class _MyWidgetState extends State<PostView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    //context.read<PostController>().start();
+    context.read<PostProvider>();
+  }
+
+  //@override
+  // void dispose() {
+  //   super.dispose();
+  //   context.read<PostProvider>();
+  // }
+
+  @override
   Widget build(BuildContext context) {
     const WidgetStateProperty<Icon> thumbIcon =
         WidgetStateProperty<Icon>.fromMap(
@@ -400,6 +249,7 @@ class _MyWidgetState extends State<PostView> {
               const Center(widthFactor: 200, child: Text("Listagem de Posts")),
         ),
         leading: Switch(
+            //activeColor: Color(value),
             thumbIcon: thumbIcon,
             value: context.read<PostProvider>().isDarktheme,
             onChanged: (bool? value) {
@@ -408,11 +258,35 @@ class _MyWidgetState extends State<PostView> {
               });
             }),
       ),
-      body: AnimatedBuilder(
-          animation: postController.state,
-          builder: (context, child) {
-            return changeState(postController.state.value);
-          }),
+      body: FutureBuilder(
+        future: context.watch<PostProvider>().futurePosts,
+        //future: context.watch<PostController>().futurePosts,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final posts = snapshot.data!;
+            return ListPosts(posts: posts);
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, color: Colors.red),
+                      snapshot.error.toString()),
+                ],
+              ),
+            );
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [CircularProgressIndicator(), Text("Carregando")]),
+            );
+          }
+          return const Scaffold();
+        },
+      ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(left: 30),
         child: Row(
@@ -431,7 +305,7 @@ class _MyWidgetState extends State<PostView> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      bottomNavigationBar: const BottomNavBar(),
     );
   }
 }
