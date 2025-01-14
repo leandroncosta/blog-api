@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using System.Globalization;
 
 namespace api.Models
 {
@@ -20,7 +21,8 @@ namespace api.Models
         public string Content { get; set; }
 
         [BsonElement("date")]
-        public DateTime Date { get; set; }
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime Date { get; set; } = DateTime.Now;
 
     }
 }

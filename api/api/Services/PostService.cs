@@ -1,6 +1,7 @@
 ﻿
 
 using System.Diagnostics.Eventing.Reader;
+using api.Exceptions;
 using api.Models;
 using api.Repositories;
 using api.Utils;
@@ -26,6 +27,10 @@ namespace api.Services.PostService
         public async Task<List<Post>> GetPosts()
         {
             var postsDb = await _postRepository.GetPosts();
+            if (postsDb.Count==0)
+            {
+                throw new NotFoundException("Nenhum Post foi encontrado");
+            }
             return postsDb;
         }
         public async Task<Post> CreatePost(string userId, Post post)
@@ -43,16 +48,30 @@ namespace api.Services.PostService
         public async Task<List<Post>> GetPostsByUserId(string userId)
         {
             var posts = await _postRepository.GetPostsByUserId(userId);
+            if (posts == null)
+            {
+                throw new NotFoundException("nenhum Post foi encontrado");
+            }
             return posts;
         }
         public async Task<Post> GetPostById(string id)
         {
-            return await _postRepository.GetPostById(id);
+             var postDb=await _postRepository.GetPostById(id);
+            if (postDb == null)
+            {
+                throw new NotFoundException("O post não foi encontrado");
+            }
+            return postDb;
         }
         public async Task<Post> Put(string id, Post post)
         {
-            var p = await _postRepository.GetPostById(id);
-            SecurityUtils.VerifyOwnerShip(p?.UserId);
+            var postDb = await _postRepository.GetPostById(id);
+           
+            if (postDb == null)
+            {
+                throw new NotFoundException("O post não foi encontrado ");
+            }
+            SecurityUtils.VerifyOwnerShip(postDb?.UserId);
             return await _postRepository.Put(id, post);
         }
         public async Task<bool> Delete(string id)

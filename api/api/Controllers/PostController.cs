@@ -60,6 +60,7 @@ namespace api.Controllers
             {
                 return BadRequest(
                     new ResponseDto<Post>.Builder()
+                    .SetError(true)
                     .SetStatus(404)
                     .SetMessage(ex.Message)
                     .SetData(new Post())
@@ -70,7 +71,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<ActionResult<Post>> CreatePost([FromBody] Post post)
         {
-            var userId = User.FindFirst("userId")?.Value;
+            var userId = User?.FindFirst("userId")?.Value;
             post.UserId = userId;
             try
             {
@@ -117,13 +118,25 @@ namespace api.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ResponseDto<Post>>> Put(string id, [FromBody] Post post)
         {
+            try
+            {
 
-            var postDb = await _postInterface.Put(id, post);
-            return Ok(new ResponseDto<Post>.Builder()
-               .SetMessage("O post foi  atualizado com sucesso")
-               .SetStatus(200)
-               .SetData(post)
-               .Build());
+                var postDb = await _postInterface.Put(id, post);
+                return Ok(new ResponseDto<Post>.Builder()
+              .SetMessage("O post foi  atualizado com sucesso")
+              .SetStatus(200)
+              .SetData(post)
+              .Build());
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new ResponseDto<Post>.Builder()
+                    .SetMessage(ex.Message)
+                    .SetStatus(404)
+                    .SetData(new Post())
+                     .Build());
+            }
+           
 
 
         }

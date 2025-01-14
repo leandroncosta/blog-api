@@ -4,10 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using api.Controllers;
+using api.Exceptions;
 using api.Models;
 using api.Repositories;
 using api.Services;
 using api.Services.PostService;
+using api.Utils;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using Moq;
@@ -20,6 +23,8 @@ namespace TestProject1.ServicesTest
         private readonly Mock<IPostRepository> _postRepositoryMock = new Mock<IPostRepository>();
         private readonly Mock<IUserRepository> _userRepositoryMock = new Mock<IUserRepository>();
         private readonly Mock<IUserService> _userServiceMock = new Mock<IUserService>();
+        //private readonly Mock<IHttpContextAccessor> _httpContextAccessor= new Mock<IHttpContextAccessor>();
+
         public PostServiceTest()
         {
             _postService = new PostService(_postRepositoryMock.Object, _userServiceMock.Object, _userRepositoryMock.Object);
@@ -67,20 +72,18 @@ namespace TestProject1.ServicesTest
             Assert.Equal(expected.Content, actual[0].Content);
             _postRepositoryMock.Verify(p => p.GetPosts(), Times.Once);
         }
-        [Fact(DisplayName = "Should return a empty list  when posts not exists")]
-        public async void GetPosts_ShouldReturnAemptyList_WhenPostsNotExists()
+        [Fact(DisplayName = "Should throw An NotFoundException  when posts not exists")]
+        public async void GetPosts_ShouldThrowAnNotFoundException_WhenPostsNotExists()
         {
             //Arrange
             PostsList.ToList();
 
-            _postRepositoryMock.Setup(p => p.GetPosts()).ReturnsAsync(PostsList);
-            //Act 
-            var actual = await _postService.GetPosts();
-            await _postService.GetPosts();
-            //Assert
-            Assert.NotNull(actual);
-            Assert.Empty(actual);
-            _postRepositoryMock.Verify(p => p.GetPosts(), Times.Exactly(2));
+            _postRepositoryMock.Setup(p => p.GetPosts()).ThrowsAsync(new NotFoundException("Nenhum Post foi encontrado"));
+            //Act && Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() => _postService.GetPosts());
+            Assert.IsType<NotFoundException>(exception);
+            Assert.Equal("Nenhum Post foi encontrado",exception.Message);
+            _postRepositoryMock.Verify(p => p.GetPosts(), Times.Once);
 
         }
 
@@ -158,9 +161,13 @@ namespace TestProject1.ServicesTest
         public async void UpdatePost_ShouldReturnTheSuccessfullyUpdatedPost_WhenPostExists()
         {
             //Arrange
+            //var user = _httpContextAccessor.Setup(p => p.HttpContext).Returns(HttpContext().User);
             var id = Post.Id;
             var post = Post;
-            _postRepositoryMock.Setup(p => p.Put(id, post)).ReturnsAsync(Post);
+            post.UserId = "65648b4a04df751357db22fb";
+            _postRepositoryMock.Setup(p => p.GetPostById(id)).ReturnsAsync(post);
+            SecurityUtils.VerifyOwnerShip(post?.UserId);
+            _postRepositoryMock.Setup(p => p.Put(id, post)).ReturnsAsync(post);
 
             //Act
             var actual = await _postService.Put(id, post);
@@ -171,6 +178,7 @@ namespace TestProject1.ServicesTest
             Assert.Equal(post.Title, actual.Title);
             Assert.Equal(post.Content, actual.Content);
             Assert.Equal(post.Date, actual.Date);
+            _postRepositoryMock.Verify(p => p.GetPostById(id), Times.Once);
             _postRepositoryMock.Verify(p => p.Put(id, post), Times.Once);
         }
         [Fact(DisplayName = "Should throw  an exception when the post not exists")]
@@ -178,11 +186,11 @@ namespace TestProject1.ServicesTest
         {
             //Arrange
             var post = Post;
-            _postRepositoryMock.Setup(p => p.Put(It.IsAny<string>(), It.IsAny<Post>())).ThrowsAsync(new Exception());
+            _postRepositoryMock.Setup(p => p.Put(It.IsAny<string>(), It.IsAny<Post>())).ThrowsAsync(new NotFoundException("O post não foi encontrado"));
             //Act && Assert
-            var exception = await Assert.ThrowsAsync<Exception>(() => _postService.Put("", post));
-            Assert.IsType<Exception>(exception);
-            _postRepositoryMock.Verify(p => p.Put(It.IsAny<string>(), It.IsAny<Post>()), Times.Once);
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() => _postService.Put("", post));
+            Assert.IsType<NotFoundException>(exception);
+            _postRepositoryMock.Verify(p => p.Put(It.IsAny<string>(), It.IsAny<Post>()), Times.Never);
         }
 
         [Fact(DisplayName = "Should delete a post with success")]
